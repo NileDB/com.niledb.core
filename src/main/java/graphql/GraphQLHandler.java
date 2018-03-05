@@ -1,0 +1,557 @@
+/**
+ * Copyright (C) 2018 NileDB, Inc.
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License, version 3,
+ *    as published by the Free Software Foundation.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+package graphql;
+
+import static graphql.Scalars.*;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.GraphQLArgument.newArgument;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import data.CustomType;
+import data.CustomTypeAttribute;
+import data.Database;
+import data.Entity;
+import data.EntityAttribute;
+import data.EntityReference;
+import graphql.ExecutionInput;
+import graphql.ExecutionResult;
+import graphql.GraphQL;
+import graphql.GraphQLError;
+import graphql.language.Field;
+import graphql.schema.DataFetcher;
+import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLNonNull;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLSchema;
+import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeReference;
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
+import helpers.ConfigHelper;
+import helpers.DatabaseHelper;
+import helpers.GraphQLAdditionalTypesHelper;
+import helpers.GraphQLMutationSchemaHelper;
+import helpers.GraphQLQuerySchemaHelper;
+import helpers.GraphQLSqlDeleteHelper;
+import helpers.GraphQLSqlInsertHelper;
+import helpers.GraphQLSqlSelectHelper;
+import helpers.GraphQLSqlUpdateHelper;
+import helpers.Helper;
+import helpers.SqlDeleteCommand;
+import helpers.SqlInsertCommand;
+import helpers.SqlSelectCommand;
+import helpers.SqlUpdateCommand;
+import helpers.maps.CustomTypeMap;
+import helpers.maps.EntityMap;
+import helpers.maps.SchemaMap;
+
+/**
+ * @author NileDB, Inc.
+ */
+public class GraphQLHandler {
+	
+	static final Logger logger = LoggerFactory.getLogger(GraphQLHandler.class);
+
+	private static GraphQL graphql = null;
+	
+	static final ObjectMapper objectMapper = new ObjectMapper()
+			.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+			.setSerializationInclusion(Include.NON_NULL);
+	
+	public static void refreshSchema() {
+		
+		logger.info("Reloading GraphQL schema from database...");
+		
+		final Database database = DatabaseHelper.getDatabaseModel(
+				(String) ConfigHelper.get(ConfigHelper.DB_HOST, "localhost"), 
+				(Integer) ConfigHelper.get(ConfigHelper.DB_PORT, 5432), 
+				(String) ConfigHelper.get(ConfigHelper.DB_NAME, "nile"),
+				(String) ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAME, "public"));
+		
+		GraphQLSchema.Builder schemaBuilder = GraphQLSchema.newSchema();
+		SchemaMap.entities = new HashMap<String, EntityMap>();
+		SchemaMap.customTypes = new HashMap<String, CustomTypeMap>();
+		
+		// Define the GraphQL object type for the mutation
+		GraphQLObjectType.Builder mutationBuilder = newObject()
+				.name("Mutation")
+				.description("Operations that make changes to the system.")
+				.field(newFieldDefinition()
+						.name("__reloadSchema")
+						.description("It reloades the GraphQL schema from database.")
+						.type(GraphQLString)
+						.dataFetcher(new DataFetcher<String>() {
+							@Override
+							public String get(DataFetchingEnvironment environment) {
+								refreshSchema();
+								return "ok";
+							}
+						}));
+		
+		// Define the GraphQL object type for the query
+		GraphQLObjectType.Builder queryBuilder = newObject()
+				.name("Query")
+				.description("Query operations. They do not make changes to the system.");
+				
+		// Get Schemas
+		HashSet<GraphQLType> additionalTypes = new HashSet<GraphQLType>();
+		
+		// Get CustomTypes
+		logger.info("Adding custom types...");
+		for (int i = 0; i < database.getCustomTypes().size(); i++) {
+			CustomType customType = database.getCustomTypes().get(i);
+			additionalTypes.add(GraphQLQuerySchemaHelper.getCustomTypeGraphqlObjectType(database, customType));
+			additionalTypes.add(GraphQLMutationSchemaHelper.getCustomTypeGraphqlInputObjectType(database, customType));
+			
+			CustomTypeMap customTypeMap = new CustomTypeMap();
+			customTypeMap.attributes = new HashMap<String, CustomTypeAttribute>();
+			for (int j = 0; j < customType.getAttributes().size(); j++) {
+				CustomTypeAttribute customTypeAttribute = customType.getAttributes().get(j);
+				customTypeMap.attributes.put(customTypeAttribute.getName(), customTypeAttribute);
+			}
+			SchemaMap.customTypes.put(customType.getName(), customTypeMap);
+		}
+		
+		// Several additional types
+		logger.info("Adding additional types...");
+		additionalTypes.addAll(GraphQLAdditionalTypesHelper.getAuxiliaryTypes());
+		
+		schemaBuilder.additionalTypes(additionalTypes);
+		
+		// Get Entities
+		logger.info("Adding entities...");
+		for (int i = 0; i < database.getEntities().size(); i++) {
+			Entity entity = database.getEntities().get(i);
+			logger.info("Adding " + entity.getName() + " entity...");
+			
+			for (int j = 0; j < entity.getAttributes().size(); j++) {
+				EntityAttribute attribute = entity.getAttributes().get(j);
+				GraphQLInputObjectType objectType = GraphQLQuerySchemaHelper.getEntityAttributeWhereTypeGraphqlObjectType(database, attribute);
+				if (objectType != null) {
+						additionalTypes.add(objectType);
+				}
+			}
+			
+			// EntityOrderByType
+			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityOrderByAttributesGraphqlEnumType(database, entity));
+			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityOrderByGraphqlObjectType(database, entity));
+			
+			// EntityWhereType
+			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityWhereGraphqlObjectType(database, entity));
+			
+			EntityMap entityMap = new EntityMap();
+			entityMap.attributes = new HashMap<String, EntityAttribute>();
+			entityMap.directReferences = new HashMap<String, EntityReference>();
+			entityMap.inverseReferences = new HashMap<String, EntityReference>();
+			SchemaMap.entities.put(entity.getName(), entityMap);
+			
+			// Entity query definition
+			queryBuilder.field(newFieldDefinition()
+					.name(entity.getName() + "List")
+					.description("It queries " + Helper.toFirstUpper(entity.getName()) + " entities.")
+					.type(new GraphQLList(GraphQLQuerySchemaHelper.getEntityResultGraphqlObjectType(database, entity)))
+					.argument(newArgument()
+							.name("where")
+							.description("Search criteria.")
+							.type(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "WhereType")))
+					.argument(newArgument()
+							.name("orderBy")
+							.description("Sorting criteria.")
+							.type(new GraphQLList(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "OrderByType"))))
+					.argument(newArgument()
+							.name("limit")
+							.description("Maximum number of items to return.")
+							.type(GraphQLInt))
+					.argument(newArgument()
+							.name("offset")
+							.description("Number of items to skip.")
+							.type(GraphQLInt))
+					
+					.dataFetcher(new DataFetcher<Object>() {
+						@Override
+						public Object get(DataFetchingEnvironment environment) {
+							List<Field> fields = environment.getFields();
+							
+							Connection connection = null;
+							try {
+								connection = DatabaseHelper.getConnection();
+								
+								Field field = fields.get(0);
+								
+								SqlSelectCommand sqlSelectCommand = GraphQLSqlSelectHelper.getCommand(field, environment, entity, database, 1, true);
+								
+								StringBuffer sb = new StringBuffer("SELECT array_to_json(array_agg(row_to_json(\"list_0\", true)), true) AS \"list\" FROM (\n")
+												.append(sqlSelectCommand)
+												.append(") AS \"list_0\"");
+								
+								PreparedStatement ps = connection.prepareStatement(sb.toString());
+								System.out.println(sb.toString());
+								List<Object> parameters = sqlSelectCommand.getParameters();
+								for (int k = 0; k < parameters.size(); k++) {
+									ps.setObject(k + 1, parameters.get(k));
+								}
+								ResultSet rs = ps.executeQuery();
+								rs.next();
+
+								JsonArray result = null;
+								String resultString = rs.getString("list");
+								if (resultString != null) {
+									result = new JsonArray(resultString);
+								}
+								else {
+									result = new JsonArray();
+								}
+								rs.close();
+								
+								System.out.println(result.encodePrettily());
+								
+								return result;
+							}
+							catch (Exception e) {
+								e.printStackTrace();
+								throw new RuntimeException(e.getMessage());
+							}
+							finally {
+								try {
+									if (connection != null) {
+										connection.close();
+									}
+								}
+								catch (Exception e) {
+									e.printStackTrace();
+									throw new RuntimeException(e.getMessage());
+								}
+							}
+						}
+					}));
+			
+			// Entity mutation insert definition
+			mutationBuilder.field(newFieldDefinition()
+					.name(entity.getName() + "Create")
+					.description("It creates a new " + Helper.toFirstUpper(entity.getName()) + " entity.")
+					.type(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "ResultType"))
+					.argument(newArgument()
+							.name("entity")
+							.description("The " + entity.getName() + " entity to create.")
+							.type(GraphQLNonNull.nonNull(GraphQLMutationSchemaHelper.getEntityGraphqlCreateInputObjectType(database, entity))))
+					.dataFetcher(new DataFetcher<Object>() {
+						@Override
+						public Object get(DataFetchingEnvironment environment) {
+							List<Field> fields = environment.getFields();
+							
+							Connection connection = null;
+							try {
+								connection = DatabaseHelper.getConnection();
+								
+								Field field = fields.get(0);
+								
+								SqlInsertCommand sqlInsertCommand = GraphQLSqlInsertHelper.getCommand(field, environment, entity, database);
+								
+								StringBuffer sb = new StringBuffer()
+												.append(sqlInsertCommand);
+								
+								System.out.println(sb.toString());
+								
+								PreparedStatement ps = connection.prepareStatement(sb.toString());
+								for (int j = 0; j < sqlInsertCommand.values.size(); j++) {
+									ps.setObject(j + 1, sqlInsertCommand.values.get(j));
+								}
+								ResultSet rs = ps.executeQuery();
+								rs.next();
+								
+								JsonObject result = new JsonArray(rs.getString("list")).getJsonObject(0);
+								System.out.println(result.encodePrettily());
+								rs.close();
+								
+								return result;
+							}
+							catch (Exception e) {
+								e.printStackTrace();
+								throw new RuntimeException(e.getMessage());
+							}
+							finally {
+								try {
+									if (connection != null) {
+										connection.close();
+									}
+								}
+								catch (Exception e) {
+									e.printStackTrace();
+									throw new RuntimeException(e.getMessage());
+								}
+							}
+						}
+					}));
+			
+			// Entity mutation update definition
+			mutationBuilder.field(newFieldDefinition()
+					.name(entity.getName() + "Update")
+					.description("It updates one or more " + Helper.toFirstUpper(entity.getName()) + " entities.")
+					.type(GraphQLList.list(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "ResultType")))
+					.argument(newArgument()
+							.name("entity")
+							.description("The changes to be applied.")
+							.type(GraphQLNonNull.nonNull(GraphQLMutationSchemaHelper.getEntityGraphqlUpdateInputObjectType(database, entity))))
+					.argument(newArgument()
+							.name("where")
+							.description("Search criteria for selecting the entities that must be updated.")
+							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "WhereType"))))
+					.dataFetcher(new DataFetcher<Object>() {
+						@Override
+						public Object get(DataFetchingEnvironment environment) {
+							List<Field> fields = environment.getFields();
+							
+							Connection connection = null;
+							try {
+								connection = DatabaseHelper.getConnection();
+								
+								Field field = fields.get(0);
+								
+								SqlUpdateCommand sqlUpdateCommand = GraphQLSqlUpdateHelper.getCommand(field, environment, entity, database);
+								
+								StringBuffer sb = new StringBuffer()
+												.append(sqlUpdateCommand);
+								
+								System.out.println(sb.toString());
+								
+								PreparedStatement ps = connection.prepareStatement(sb.toString());
+								sqlUpdateCommand.values.addAll(sqlUpdateCommand.whereParameters);
+								for (int j = 0; j < sqlUpdateCommand.values.size(); j++) {
+									ps.setObject(j + 1, sqlUpdateCommand.values.get(j));
+								}
+								ResultSet rs = ps.executeQuery();
+								rs.next();
+								
+								JsonArray result = new JsonArray();
+								String resultString = rs.getString("list");
+								if (resultString != null) {
+									result = new JsonArray(resultString);
+								}
+								System.out.println(result.encodePrettily());
+								rs.close();
+								
+								return result;
+							}
+							catch (Exception e) {
+								e.printStackTrace();
+								throw new RuntimeException(e.getMessage());
+							}
+							finally {
+								try {
+									if (connection != null) {
+										connection.close();
+									}
+								}
+								catch (Exception e) {
+									e.printStackTrace();
+									throw new RuntimeException(e.getMessage());
+								}
+							}
+						}
+					}));
+			
+			// Entity mutation delete definition
+			mutationBuilder.field(newFieldDefinition()
+					.name(entity.getName() + "Delete")
+					.description("It deletes one or more " + Helper.toFirstUpper(entity.getName()) + " entities.")
+					.type(GraphQLList.list(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "ResultType")))
+					.argument(newArgument()
+							.name("where")
+							.description("Search criteria for selecting the entities that must be deleted.")
+							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "WhereType"))))
+					.dataFetcher(new DataFetcher<Object>() {
+						@Override
+						public Object get(DataFetchingEnvironment environment) {
+							List<Field> fields = environment.getFields();
+							
+							Connection connection = null;
+							try {
+								connection = DatabaseHelper.getConnection();
+								
+								Field field = fields.get(0);
+								
+								SqlDeleteCommand sqlDeleteCommand = GraphQLSqlDeleteHelper.getCommand(field, environment, entity, database);
+								
+								StringBuffer sb = new StringBuffer()
+												.append(sqlDeleteCommand);
+								
+								System.out.println(sb.toString());
+								
+								PreparedStatement ps = connection.prepareStatement(sb.toString());
+								for (int j = 0; j < sqlDeleteCommand.whereParameters.size(); j++) {
+									ps.setObject(j + 1, sqlDeleteCommand.whereParameters.get(j));
+								}
+								ResultSet rs = ps.executeQuery();
+								rs.next();
+								
+								JsonArray result = new JsonArray();
+								String resultString = rs.getString("list");
+								if (resultString != null) {
+									result = new JsonArray(resultString);
+								}
+								System.out.println(result.encodePrettily());
+								rs.close();
+								
+								return result;
+							}
+							catch (Exception e) {
+								e.printStackTrace();
+								throw new RuntimeException(e.getMessage());
+							}
+							finally {
+								try {
+									if (connection != null) {
+										connection.close();
+									}
+								}
+								catch (Exception e) {
+									e.printStackTrace();
+									throw new RuntimeException(e.getMessage());
+								}
+							}
+						}
+					}));
+		}
+		
+		queryBuilder.field(newFieldDefinition()
+				.name("__systemAverageLoad")
+				.description("It returns the system average load in order to decide to scale or not in a elastic context.")
+				.type(GraphQLFloat)
+				.dataFetcher(new DataFetcher<Double>() {
+					@Override
+					public Double get(DataFetchingEnvironment environment) {
+						OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+						return osBean.getSystemLoadAverage();
+					}
+				}));
+		
+		schemaBuilder.query(queryBuilder);
+		schemaBuilder.mutation(mutationBuilder);
+		
+		GraphQLSchema schema = schemaBuilder.build();
+		
+		graphql = GraphQL.newGraphQL(schema).build();
+		logger.info("New GraphQL schema loaded successfully.");
+	}
+	
+	public static GraphQL getGraphQL() {
+		if (graphql == null) {
+			refreshSchema();
+		}
+		return graphql;
+	}
+	
+	public static void execute(RoutingContext routingContext) {
+		try {
+			HttpServerResponse response = routingContext.response();
+			HttpServerRequest request = routingContext.request();
+			
+			GraphQL graphql = getGraphQL();
+			String query = request.getParam("query");
+			
+			HashMap<String, Object> variables = new HashMap<String, Object>();
+			
+			String operationName = null;
+			if (request.method() == HttpMethod.POST) {
+				JsonObject body = new JsonObject(
+						routingContext.getBodyAsString().replaceAll("\\n", "").replaceAll("\\t", ""));
+				if (query == null) {
+					query = body.getString("query");
+				}
+				JsonObject variablesJson = body.getJsonObject("variables");
+				if (variablesJson != null) {
+					Iterator<String> fieldNames = variablesJson.fieldNames().iterator();
+					while (fieldNames.hasNext()) {
+						String fieldName = fieldNames.next();
+						if (fieldName.equals("authorization")) {
+							// accessToken =
+							// SecurityProvider.getJwtAccessToken((String)
+							// variablesJson.getValue(fieldName));
+						}
+						variables.put(fieldName, variablesJson.getValue(fieldName));
+					}
+				}
+				operationName = body.getString("operationName");
+			}
+			
+			ExecutionInput.Builder executionInput = ExecutionInput.newExecutionInput()
+					.operationName(operationName)
+					.query(query)
+					.context(variables)
+					.variables(variables);
+			
+			JsonObject result = new JsonObject();
+			
+	    	ExecutionResult executionResult = graphql.execute(executionInput.build());
+			
+			if (executionResult.getErrors().size() > 0) {
+				JsonArray jsonErrors = new JsonArray();
+				List<GraphQLError> errors = executionResult.getErrors();
+				for (int i = 0; i < errors.size(); i++) {
+					GraphQLError error = errors.get(i);
+					jsonErrors.add(error.toSpecification());
+				}
+				result.put("errors", jsonErrors);
+			}
+		    result.put("data", (Object) executionResult.getData());
+			
+			MultiMap headers = response.headers();
+			
+			// CORS Headers
+			String origin = request.headers().get("Origin");
+			if (origin != null && !origin.equals("")) {
+				headers.add("Access-Control-Allow-Origin", origin);
+				headers.add("Access-Control-Allow-Credentials", "true");
+				headers.add("Vary", "Accept-Encoding, Origin");
+			} 
+			else {
+				headers.add("Access-Control-Allow-Origin", "*");
+			}
+			headers.add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS, HEAD");
+			headers.add("Access-Control-Allow-Headers", "X-Apollo-Tracing, Authorization, Cache-Control, X-XSRF, Origin, X-Requested-With, Content-Type, Accept, Content-Length");
+			headers.add("Allow", "HEAD, GET, DELETE, OPTIONS");
+			headers.add("Content-Type", "application/json");
+			response.end(result.encode());
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+}

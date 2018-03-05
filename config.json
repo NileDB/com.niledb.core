@@ -1,0 +1,30 @@
+{
+	"service.host": "localhost",
+	"service.port": 8080,
+	"service.ssl": false,
+	"service.ssl.autoGenerateCert": false,
+	"service.ssl.key.path": "misc/ssl/private.pem",
+	"service.ssl.cert.path": "misc/ssl/public.pem",
+	"service.authenticate": false,
+	"service.username": "niledb",
+	"service.password": "xxxxxx",
+	"service.query.maxResults": 100,
+	"service.forceSsl": false,
+	"service.redirectFromPort": 8080,
+	"service.redirectUrl": "https://localhost:8443",
+	
+	"db.name": "pagila",
+	"db.schema.name": "public",
+	"db.host": "localhost",
+	"db.port": 5432,
+	
+	"db.replica.host": "localhost",
+	"db.replica.port": 5432,
+	
+	"db.username": "postgres",
+	"db.password": "postgres",
+	
+	"model.path": "model.xmi",
+	"model.createModelFromDb": true,
+	"model.createDbFromModel": true
+}

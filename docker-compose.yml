@@ -1,0 +1,29 @@
+version: "3.1"
+
+services:
+  db:
+    container_name: db
+    environment:
+      POSTGRES_PASSWORD: postgres
+    #image: postgres
+    #image: postgres:alpine
+    #image: timescale/timescaledb:latest-pg10
+    image: timescale/timescaledb-postgis:latest-pg10
+    restart: always
+      
+  niledb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: services
+    depends_on: 
+      - db
+    environment:
+      - JAVA_OPTS="-Xms384m -Xmx384m"
+    image: niledb/core
+    links:
+      - db
+    ports:
+      - 80:80
+    restart: always
+

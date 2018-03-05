@@ -1,0 +1,30 @@
+{
+	"service.host": "localhost",
+	"service.port": 80,
+	"service.ssl": false,
+	"service.ssl.autoGenerateCert": false,
+	"service.ssl.key.path": "misc/ssl/private.pem",
+	"service.ssl.cert.path": "misc/ssl/public.pem",
+	"service.authenticate": false,
+	"service.username": "niledb",
+	"service.password": "xxxxxxx",
+	"service.query.maxResults": 100,
+	"service.forceSsl": false,
+	"service.redirectFromPort": 80,
+	"service.redirectUrl": "https://localhost",
+	
+	"db.name": "niledb",
+	"db.schema.name": "public",
+	"db.host": "db",
+	"db.port": 5432,
+	
+	"db.replica.host": "db",
+	"db.replica.port": 5432,
+	
+	"db.username": "postgres",
+	"db.password": "postgres",
+	
+	"model.path": "model.xmi",
+	"model.createModelFromDb": true,
+	"model.createDbFromModel": true
+}
