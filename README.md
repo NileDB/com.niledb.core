@@ -36,8 +36,8 @@ This product uses and is based on the following:
 
 ### License
 
-NileDB Core is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE.md) for details.
+NileDB Core is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE.txt) for details.
 
 Copyright (c) 2018, NileDB, Inc.
 
-[NileDB Core License](LICENSE.md)
+[NileDB Core License](LICENSE.txt)
