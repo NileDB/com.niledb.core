@@ -48,9 +48,9 @@ public class GraphQLMutationSchemaHelper {
 	 *            The custom type
 	 * @return The GraphQL object type
 	 */
-	public static final GraphQLInputObjectType getCustomTypeGraphqlInputObjectType(Database database, CustomType customType) {
+	public static final GraphQLInputObjectType getCustomTypeGraphqlInputObjectType(Database database, CustomType customType, boolean multiSchema) {
 		GraphQLInputObjectType.Builder graphqlObjectType = newInputObject()
-				.name(Helper.toFirstUpper(customType.getName()) + "InputType")
+				.name((multiSchema ? Helper.toFirstUpper(customType.getSchema()) + "_" : "") + Helper.toFirstUpper(customType.getName()) + "InputType")
 				.description(customType.getDocumentation());
 		
 		for (int i = 0; i < customType.getAttributes().size(); i++) {
@@ -94,7 +94,7 @@ public class GraphQLMutationSchemaHelper {
 						
 					case CustomTypeAttributeType.CUSTOM_TYPE_VALUE:
 						fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
-								.typeRef(Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
+								.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
 						break;
 						
 					default:
@@ -135,7 +135,7 @@ public class GraphQLMutationSchemaHelper {
 	
 					case CustomTypeAttributeType.CUSTOM_TYPE_VALUE:
 						fieldDefinition.type(GraphQLTypeReference
-								.typeRef(Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
+								.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
 						break;
 	
 					default:
@@ -156,14 +156,14 @@ public class GraphQLMutationSchemaHelper {
 	 *            The entity
 	 * @return The GraphQL object type
 	 */
-	public static final GraphQLInputObjectType getEntityGraphqlCreateInputObjectType(Database database, Entity entity) {
+	public static final GraphQLInputObjectType getEntityGraphqlCreateInputObjectType(Database database, Entity entity, boolean multiSchema) {
 		
 		// Get Fields
 		GraphQLInputObjectType.Builder graphqlInputObjectType = newInputObject()
-				.name(Helper.toFirstUpper(entity.getName()) + "CreateInputType")
+				.name((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "CreateInputType")
 				.description(entity.getDocumentation());
 		
-		EntityMap entityMap = SchemaMap.entities.get(entity.getName());
+		EntityMap entityMap = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName());
 		
 		// Get attributes
 		for (int i = 0; i < entity.getAttributes().size(); i++) {
@@ -234,11 +234,11 @@ public class GraphQLMutationSchemaHelper {
 					case EntityAttributeType.CUSTOM_TYPE_VALUE:
 						if (attribute.isRequired() && attribute.getDefaultValue() == null) {
 							fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLTypeReference
-									.typeRef(Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"))));
+									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"))));
 						}
 						else {
 							fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
-									.typeRef(Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
+									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
 						}
 						break;
 						
@@ -312,11 +312,11 @@ public class GraphQLMutationSchemaHelper {
 					case EntityAttributeType.CUSTOM_TYPE_VALUE:
 						if (attribute.isRequired() && attribute.getDefaultValue() == null) {
 							fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLTypeReference
-									.typeRef(Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
+									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
 						}
 						else {
 							fieldDefinition.type(GraphQLTypeReference
-									.typeRef(Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
+									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
 						}
 						break;
 						
@@ -343,14 +343,14 @@ public class GraphQLMutationSchemaHelper {
 	 *            The entity
 	 * @return The GraphQL object type
 	 */
-	public static final GraphQLInputObjectType getEntityGraphqlUpdateInputObjectType(Database database, Entity entity) {
+	public static final GraphQLInputObjectType getEntityGraphqlUpdateInputObjectType(Database database, Entity entity, boolean multiSchema) {
 		
 		// Get Fields
 		GraphQLInputObjectType.Builder graphqlInputObjectType = newInputObject()
-				.name(Helper.toFirstUpper(entity.getName()) + "UpdateInputType")
+				.name((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "UpdateInputType")
 				.description(entity.getDocumentation());
 		
-		EntityMap entityMap = SchemaMap.entities.get(entity.getName());
+		EntityMap entityMap = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName());
 		
 		// Get attributes
 		for (int i = 0; i < entity.getAttributes().size(); i++) {
@@ -400,7 +400,7 @@ public class GraphQLMutationSchemaHelper {
 						
 					case EntityAttributeType.CUSTOM_TYPE_VALUE:
 						fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
-								.typeRef(Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
+								.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
 						break;
 						
 					default:
@@ -447,7 +447,7 @@ public class GraphQLMutationSchemaHelper {
 						
 					case EntityAttributeType.CUSTOM_TYPE_VALUE:
 						fieldDefinition.type(GraphQLTypeReference
-								.typeRef(Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
+								.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
 						break;
 						
 					default:

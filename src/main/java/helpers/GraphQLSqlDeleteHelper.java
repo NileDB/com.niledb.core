@@ -38,9 +38,11 @@ public class GraphQLSqlDeleteHelper {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static SqlDeleteCommand getCommand(Field field, DataFetchingEnvironment environment, Entity entity, Database database) {
 		
+		boolean multiSchema = database.getSchemaNames().size() > 1;
+		
 		SqlDeleteCommand sqlCommand = new SqlDeleteCommand();
 		
-		EntityMap entityMap = SchemaMap.entities.get(entity.getName());
+		EntityMap entityMap = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName());
 		
 		List<Argument> arguments = field.getArguments();
 		for (int i = 0; i < arguments.size(); i++) {
@@ -52,7 +54,7 @@ public class GraphQLSqlDeleteHelper {
 			}
 		}
 		
-		sqlCommand.delete = "DELETE FROM \"" + entity.getName() + "\" AS \"" + entity.getName() + "_1\" ";
+		sqlCommand.delete = "DELETE FROM \"" + (multiSchema ? entity.getSchema() + "\".\"" : "") + entity.getName() + "\" AS \"" + entity.getName() + "_1\" ";
 		
 		int attributeCount = 0;
 		List<Selection> selections = field.getSelectionSet().getSelections();

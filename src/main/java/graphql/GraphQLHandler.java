@@ -25,6 +25,7 @@ import java.lang.management.OperatingSystemMXBean;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -87,7 +88,7 @@ import helpers.maps.SchemaMap;
 public class GraphQLHandler {
 	
 	static final Logger logger = LoggerFactory.getLogger(GraphQLHandler.class);
-
+	
 	private static GraphQL graphql = null;
 	
 	static final ObjectMapper objectMapper = new ObjectMapper()
@@ -98,11 +99,14 @@ public class GraphQLHandler {
 		
 		logger.info("Reloading GraphQL schema from database...");
 		
+		List<String> schemaNames = ((JsonArray) ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAMES, new JsonArray().add("public"))).getList();
+		boolean multiSchema = schemaNames.size() > 1;
+		
 		final Database database = DatabaseHelper.getDatabaseModel(
 				(String) ConfigHelper.get(ConfigHelper.DB_HOST, "localhost"), 
 				(Integer) ConfigHelper.get(ConfigHelper.DB_PORT, 5432), 
 				(String) ConfigHelper.get(ConfigHelper.DB_NAME, "nile"),
-				(String) ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAME, "public"));
+				schemaNames);
 		
 		GraphQLSchema.Builder schemaBuilder = GraphQLSchema.newSchema();
 		SchemaMap.entities = new HashMap<String, EntityMap>();
@@ -136,8 +140,8 @@ public class GraphQLHandler {
 		logger.info("Adding custom types...");
 		for (int i = 0; i < database.getCustomTypes().size(); i++) {
 			CustomType customType = database.getCustomTypes().get(i);
-			additionalTypes.add(GraphQLQuerySchemaHelper.getCustomTypeGraphqlObjectType(database, customType));
-			additionalTypes.add(GraphQLMutationSchemaHelper.getCustomTypeGraphqlInputObjectType(database, customType));
+			additionalTypes.add(GraphQLQuerySchemaHelper.getCustomTypeGraphqlObjectType(database, customType, multiSchema));
+			additionalTypes.add(GraphQLMutationSchemaHelper.getCustomTypeGraphqlInputObjectType(database, customType, multiSchema));
 			
 			CustomTypeMap customTypeMap = new CustomTypeMap();
 			customTypeMap.attributes = new HashMap<String, CustomTypeAttribute>();
@@ -145,7 +149,7 @@ public class GraphQLHandler {
 				CustomTypeAttribute customTypeAttribute = customType.getAttributes().get(j);
 				customTypeMap.attributes.put(customTypeAttribute.getName(), customTypeAttribute);
 			}
-			SchemaMap.customTypes.put(customType.getName(), customTypeMap);
+			SchemaMap.customTypes.put(customType.getSchema() + "." + customType.getName(), customTypeMap);
 		}
 		
 		// Several additional types
@@ -162,38 +166,38 @@ public class GraphQLHandler {
 			
 			for (int j = 0; j < entity.getAttributes().size(); j++) {
 				EntityAttribute attribute = entity.getAttributes().get(j);
-				GraphQLInputObjectType objectType = GraphQLQuerySchemaHelper.getEntityAttributeWhereTypeGraphqlObjectType(database, attribute);
+				GraphQLInputObjectType objectType = GraphQLQuerySchemaHelper.getEntityAttributeWhereTypeGraphqlObjectType(database, attribute, multiSchema);
 				if (objectType != null) {
 						additionalTypes.add(objectType);
 				}
 			}
 			
 			// EntityOrderByType
-			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityOrderByAttributesGraphqlEnumType(database, entity));
-			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityOrderByGraphqlObjectType(database, entity));
+			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityOrderByAttributesGraphqlEnumType(database, entity, multiSchema));
+			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityOrderByGraphqlObjectType(database, entity, multiSchema));
 			
 			// EntityWhereType
-			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityWhereGraphqlObjectType(database, entity));
+			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityWhereGraphqlObjectType(database, entity, multiSchema));
 			
 			EntityMap entityMap = new EntityMap();
 			entityMap.attributes = new HashMap<String, EntityAttribute>();
 			entityMap.directReferences = new HashMap<String, EntityReference>();
 			entityMap.inverseReferences = new HashMap<String, EntityReference>();
-			SchemaMap.entities.put(entity.getName(), entityMap);
+			SchemaMap.entities.put(entity.getSchema() + "." + entity.getName(), entityMap);
 			
 			// Entity query definition
 			queryBuilder.field(newFieldDefinition()
-					.name(entity.getName() + "List")
+					.name((schemaNames.size() == 1 ? "" : entity.getSchema() + "_") + entity.getName() + "List")
 					.description("It queries " + Helper.toFirstUpper(entity.getName()) + " entities.")
-					.type(new GraphQLList(GraphQLQuerySchemaHelper.getEntityResultGraphqlObjectType(database, entity)))
+					.type(new GraphQLList(GraphQLQuerySchemaHelper.getEntityResultGraphqlObjectType(database, entity, multiSchema)))
 					.argument(newArgument()
 							.name("where")
 							.description("Search criteria.")
-							.type(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "WhereType")))
+							.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType")))
 					.argument(newArgument()
 							.name("orderBy")
 							.description("Sorting criteria.")
-							.type(new GraphQLList(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "OrderByType"))))
+							.type(new GraphQLList(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "OrderByType"))))
 					.argument(newArgument()
 							.name("limit")
 							.description("Maximum number of items to return.")
@@ -263,13 +267,13 @@ public class GraphQLHandler {
 			
 			// Entity mutation insert definition
 			mutationBuilder.field(newFieldDefinition()
-					.name(entity.getName() + "Create")
+					.name((schemaNames.size() == 1 ? "" : entity.getSchema() + "_") + entity.getName() + "Create")
 					.description("It creates a new " + Helper.toFirstUpper(entity.getName()) + " entity.")
-					.type(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "ResultType"))
+					.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "ResultType"))
 					.argument(newArgument()
 							.name("entity")
 							.description("The " + entity.getName() + " entity to create.")
-							.type(GraphQLNonNull.nonNull(GraphQLMutationSchemaHelper.getEntityGraphqlCreateInputObjectType(database, entity))))
+							.type(GraphQLNonNull.nonNull(GraphQLMutationSchemaHelper.getEntityGraphqlCreateInputObjectType(database, entity, multiSchema))))
 					.dataFetcher(new DataFetcher<Object>() {
 						@Override
 						public Object get(DataFetchingEnvironment environment) {
@@ -321,17 +325,17 @@ public class GraphQLHandler {
 			
 			// Entity mutation update definition
 			mutationBuilder.field(newFieldDefinition()
-					.name(entity.getName() + "Update")
+					.name((schemaNames.size() == 1 ? "" : entity.getSchema() + "_") + entity.getName() + "Update")
 					.description("It updates one or more " + Helper.toFirstUpper(entity.getName()) + " entities.")
-					.type(GraphQLList.list(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "ResultType")))
+					.type(GraphQLList.list(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "ResultType")))
 					.argument(newArgument()
 							.name("entity")
 							.description("The changes to be applied.")
-							.type(GraphQLNonNull.nonNull(GraphQLMutationSchemaHelper.getEntityGraphqlUpdateInputObjectType(database, entity))))
+							.type(GraphQLNonNull.nonNull(GraphQLMutationSchemaHelper.getEntityGraphqlUpdateInputObjectType(database, entity, multiSchema))))
 					.argument(newArgument()
 							.name("where")
 							.description("Search criteria for selecting the entities that must be updated.")
-							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "WhereType"))))
+							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType"))))
 					.dataFetcher(new DataFetcher<Object>() {
 						@Override
 						public Object get(DataFetchingEnvironment environment) {
@@ -388,13 +392,13 @@ public class GraphQLHandler {
 			
 			// Entity mutation delete definition
 			mutationBuilder.field(newFieldDefinition()
-					.name(entity.getName() + "Delete")
+					.name((schemaNames.size() == 1 ? "" : entity.getSchema() + "_") + entity.getName() + "Delete")
 					.description("It deletes one or more " + Helper.toFirstUpper(entity.getName()) + " entities.")
-					.type(GraphQLList.list(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "ResultType")))
+					.type(GraphQLList.list(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "ResultType")))
 					.argument(newArgument()
 							.name("where")
 							.description("Search criteria for selecting the entities that must be deleted.")
-							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef(Helper.toFirstUpper(entity.getName()) + "WhereType"))))
+							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType"))))
 					.dataFetcher(new DataFetcher<Object>() {
 						@Override
 						public Object get(DataFetchingEnvironment environment) {

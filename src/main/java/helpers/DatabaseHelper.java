@@ -20,7 +20,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.sql.DataSource;
 
@@ -43,6 +45,7 @@ import data.EntityKey;
 import data.EntityReference;
 import data.EntityType;
 import data.impl.DataFactoryImpl;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -68,11 +71,14 @@ public class DatabaseHelper {
 		else {
 			try {
 				HikariConfig config = new HikariConfig();
+
+				JsonArray schemaNames = (JsonArray) ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAMES, new JsonArray().add("public"));
+				
 				config.setJdbcUrl("jdbc:postgresql://"
 						+ ConfigHelper.get(ConfigHelper.DB_HOST, "localhost") + ":"
 						+ ConfigHelper.get(ConfigHelper.DB_PORT, 5432) + "/"
-						+ ConfigHelper.get(ConfigHelper.DB_NAME, "nile") + "?"
-						+ "currentSchema=" + ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAME, "public"));
+						+ ConfigHelper.get(ConfigHelper.DB_NAME, "nile")
+						+ (schemaNames.size() == 1 ? "?currentSchema=" + schemaNames.getString(0) : ""));
 				config.setUsername((String) ConfigHelper.get(ConfigHelper.DB_USERNAME, "postgres"));
 				config.setPassword((String) ConfigHelper.get(ConfigHelper.DB_PASSWORD, "postgres"));
 				config.addDataSourceProperty("cachePrepStmts", "true");
@@ -134,7 +140,7 @@ public class DatabaseHelper {
 		return dataSource.getConnection();
 	}
 	
-	public static Database getDatabaseModel(String databaseHost, int databasePort, String databaseName, String schemaName) {
+	public static Database getDatabaseModel(String databaseHost, int databasePort, String databaseName, List<String> schemaNames) {
 		Connection connection = null;
 		
 		String catalogName = null;
@@ -150,7 +156,7 @@ public class DatabaseHelper {
 			
 			database = dataFactory.createDatabase();
 			database.setName(databaseName);
-			database.setSchemaName(schemaName);
+			database.getSchemaNames().addAll(schemaNames);
 			database.setDocumentation("Model generated from Database '" + databaseName + "'");
 			
 			// Get catalog name
@@ -164,180 +170,171 @@ public class DatabaseHelper {
 			List<CustomType> customTypes = database.getCustomTypes();
 			
 			// Get custom types
-			rs = dbmd.getTables(catalogName, schemaName, null, new String[] {"TYPE"});
-			
-			while (rs.next()) {
-				String typeName = (String) rs.getObject("table_name");
+			for (String schemaName : schemaNames) {
+				rs = dbmd.getTables(catalogName, schemaName, null, new String[] {"TYPE"});
 				
-				// TODO Debe de haber un error en el driver porque los remarks de los tipos no salen
-				String remarks = (String) rs.getObject("remarks");
-				
-				CustomType customType = dataFactory.createCustomType();
-				customType.eSetContainer(database);
-				customTypes.add(customType);
-				customType.setName(typeName);
-				customType.setDocumentation(remarks == null ? "Model generated from Type '" + typeName + "'" : remarks);
+				while (rs.next()) {
+					String typeName = (String) rs.getObject("table_name");
+					
+					// TODO Debe de haber un error en el driver porque los remarks de los tipos no salen
+					String remarks = (String) rs.getObject("remarks");
+					
+					CustomType customType = dataFactory.createCustomType();
+					customType.eSetContainer(database);
+					customTypes.add(customType);
+					customType.setSchema(schemaName);
+					customType.setName(typeName);
+					customType.setDocumentation(remarks == null ? "Model generated from Type '" + typeName + "'" : remarks);
+				}
+				rs.close();
 			}
-			rs.close();
 			
 			// Get custom types attributes
-			rs = dbmd.getTables(catalogName, schemaName, null, new String[] {"TYPE"});
-			
-			while (rs.next()) {
-				String typeName = (String) rs.getObject("table_name");
+			for (String schemaName : schemaNames) {
+				rs = dbmd.getTables(catalogName, schemaName, null, new String[] {"TYPE"});
 				
-				CustomType customType = null;
-				for (int i = 0; i < customTypes.size(); i++) {
-					if (customTypes.get(i).getName().equals(typeName)) {
-						customType = customTypes.get(i);
-						break;
+				while (rs.next()) {
+					String typeName = (String) rs.getObject("table_name");
+					
+					CustomType customType = null;
+					for (int i = 0; i < customTypes.size(); i++) {
+						if (customTypes.get(i).getSchema().equals(schemaName)
+								&& customTypes.get(i).getName().equals(typeName)) {
+							customType = customTypes.get(i);
+							break;
+						}
 					}
-				}
-				
-				List<CustomTypeAttribute> attributes = customType.getAttributes();
-				
-				ResultSet columnsRs = dbmd.getColumns(catalogName, schemaName, typeName, "%");
-				while (columnsRs.next()) {
-					String columnName = (String) columnsRs.getObject("COLUMN_NAME");
-					String columnRemarks = (String) columnsRs.getObject("REMARKS");
-					String columnTypeName = (String) columnsRs.getObject("TYPE_NAME");
-					Integer columnSize = (Integer) columnsRs.getObject("COLUMN_SIZE");
-					Integer decimalDigits = (Integer) columnsRs.getObject("DECIMAL_DIGITS");
 					
-					CustomTypeAttribute attribute = dataFactory.createCustomTypeAttribute();
-					attribute.eSetContainer(customType);
-					attributes.add(attribute);
+					List<CustomTypeAttribute> attributes = customType.getAttributes();
 					
-					attribute.setName(columnName);
-					attribute.setName(columnName);
-					attribute.setDocumentation(columnRemarks == null ? "Model generated from Column '" + columnName + "'" : columnRemarks);
-					attribute.setType(Helper.getCustomTypeAttributeType(columnTypeName));
-					if (attribute.getType() == CustomTypeAttributeType.CUSTOM_TYPE) {
-						for (int i = 0; i < customTypes.size(); i++) {
+					ResultSet columnsRs = dbmd.getColumns(catalogName, schemaName, typeName, "%");
+					while (columnsRs.next()) {
+						String columnName = (String) columnsRs.getObject("COLUMN_NAME");
+						String columnRemarks = (String) columnsRs.getObject("REMARKS");
+						String columnTypeName = (String) columnsRs.getObject("TYPE_NAME");
+						Integer columnSize = (Integer) columnsRs.getObject("COLUMN_SIZE");
+						Integer decimalDigits = (Integer) columnsRs.getObject("DECIMAL_DIGITS");
+						
+						CustomTypeAttribute attribute = dataFactory.createCustomTypeAttribute();
+						attribute.eSetContainer(customType);
+						attributes.add(attribute);
+						
+						attribute.setName(columnName);
+						attribute.setName(columnName);
+						attribute.setDocumentation(columnRemarks == null ? "Model generated from Column '" + columnName + "'" : columnRemarks);
+						attribute.setType(Helper.getCustomTypeAttributeType(columnTypeName));
+						if (attribute.getType() == CustomTypeAttributeType.CUSTOM_TYPE) {
 							attribute.setCustomType(null);
-							if (customTypes.get(i).getName().equals(columnTypeName)) {
-								attribute.setCustomType(customTypes.get(i));
-								break;
+							String customTypeSchemaName = schemaName;
+							String customTypeName = columnTypeName;
+							if (columnTypeName.contains(".")) {
+								StringTokenizer st = new StringTokenizer(columnTypeName, ".");
+								customTypeSchemaName = st.nextToken().replaceAll("\\\"", "");
+								customTypeName = st.nextToken().replaceAll("\\\"", "");
+							}
+							for (int i = 0; i < customTypes.size(); i++) {
+								if (customTypes.get(i).getSchema().equals(customTypeSchemaName)
+										&& customTypes.get(i).getName().equals(customTypeName)) {
+									attribute.setCustomType(customTypes.get(i));
+									break;
+								}
+							}
+							if (attribute.getCustomType() == null) {
+								attribute.setType(CustomTypeAttributeType.TEXT);
+								attribute.setEnumType(columnTypeName);
 							}
 						}
-						if (attribute.getCustomType() == null) {
-							attribute.setType(CustomTypeAttributeType.TEXT);
-							attribute.setEnumType(columnTypeName);
-						}
+						attribute.setArray(Helper.isArray(columnTypeName));
+						attribute.setLength(columnSize);
+						attribute.setPrecision(columnSize);
+						attribute.setScale(decimalDigits);
 					}
-					attribute.setArray(Helper.isArray(columnTypeName));
-					attribute.setLength(columnSize);
-					attribute.setPrecision(columnSize);
-					attribute.setScale(decimalDigits);
+					columnsRs.close();
 				}
-				columnsRs.close();
+				rs.close();
 			}
-			rs.close();
 			
 			// Get tables
-			rs = dbmd.getTables(catalogName, schemaName, null, new String[] {"TABLE"});
-			
-			while (rs.next()) {
-				String tableName = (String) rs.getObject("table_name");
-				String remarks = (String) rs.getObject("remarks");
+			for (String schemaName : schemaNames) {
+				rs = dbmd.getTables(catalogName, schemaName, null, new String[] {"TABLE"});
 				
-				Entity entity = dataFactory.createEntity();
-				entity.eSetContainer(database);
-				entities.add(entity);
-				entity.setName(tableName);
-				entity.setDocumentation(remarks == null ? "Model generated from Table '" + tableName + "'" : remarks);
-				entity.setType(EntityType.TABLE);
-				
-				List<EntityAttribute> attributes = entity.getAttributes();
-				ResultSet columnsRs = dbmd.getColumns(catalogName, schemaName, tableName, "%");
-				while (columnsRs.next()) {
-					String columnName = (String) columnsRs.getObject("COLUMN_NAME");
-					String columnRemarks = (String) columnsRs.getObject("REMARKS");
-					String columnTypeName = (String) columnsRs.getObject("TYPE_NAME");
-					Integer columnSize = (Integer) columnsRs.getObject("COLUMN_SIZE");
-					Integer decimalDigits = (Integer) columnsRs.getObject("DECIMAL_DIGITS");
-					Integer nullable = (Integer) columnsRs.getObject("NULLABLE");
-					String columnDefault = (String) columnsRs.getObject("COLUMN_DEF");
-					String isAutoincrement = (String) columnsRs.getObject("IS_AUTOINCREMENT");
+				while (rs.next()) {
+					String tableName = (String) rs.getObject("table_name");
+					String remarks = (String) rs.getObject("remarks");
 					
-					EntityAttribute attribute = dataFactory.createEntityAttribute();
-					attribute.eSetContainer(entity);
-					attributes.add(attribute);
+					Entity entity = dataFactory.createEntity();
+					entity.eSetContainer(database);
+					entities.add(entity);
+					entity.setSchema(schemaName);
+					entity.setName(tableName);
+					entity.setDocumentation(remarks == null ? "Model generated from Table '" + tableName + "'" : remarks);
+					entity.setType(EntityType.TABLE);
 					
-					attribute.setName(columnName);
-					attribute.setName(columnName);
-					attribute.setDocumentation(columnRemarks == null ? "Model generated from Column '" + columnName + "'" : columnRemarks);
-					attribute.setType(Helper.getEntityAttributeType(columnTypeName, isAutoincrement));
-					if (attribute.getType() == EntityAttributeType.CUSTOM_TYPE) {
-						for (int i = 0; i < customTypes.size(); i++) {
+					List<EntityAttribute> attributes = entity.getAttributes();
+					ResultSet columnsRs = dbmd.getColumns(catalogName, schemaName, tableName, "%");
+					while (columnsRs.next()) {
+						String columnName = (String) columnsRs.getObject("COLUMN_NAME");
+						String columnRemarks = (String) columnsRs.getObject("REMARKS");
+						String columnTypeName = (String) columnsRs.getObject("TYPE_NAME");
+						Integer columnSize = (Integer) columnsRs.getObject("COLUMN_SIZE");
+						Integer decimalDigits = (Integer) columnsRs.getObject("DECIMAL_DIGITS");
+						Integer nullable = (Integer) columnsRs.getObject("NULLABLE");
+						String columnDefault = (String) columnsRs.getObject("COLUMN_DEF");
+						String isAutoincrement = (String) columnsRs.getObject("IS_AUTOINCREMENT");
+						
+						EntityAttribute attribute = dataFactory.createEntityAttribute();
+						attribute.eSetContainer(entity);
+						attributes.add(attribute);
+						
+						attribute.setName(columnName);
+						attribute.setName(columnName);
+						attribute.setDocumentation(columnRemarks == null ? "Model generated from Column '" + columnName + "'" : columnRemarks);
+						attribute.setType(Helper.getEntityAttributeType(columnTypeName, isAutoincrement));
+						if (attribute.getType() == EntityAttributeType.CUSTOM_TYPE) {
 							attribute.setCustomType(null);
-							if (customTypes.get(i).getName().equals(columnTypeName)) {
-								attribute.setCustomType(customTypes.get(i));
+							String customTypeSchemaName = schemaName;
+							String customTypeName = columnTypeName;
+							if (columnTypeName.contains(".")) {
+								StringTokenizer st = new StringTokenizer(columnTypeName, ".");
+								customTypeSchemaName = st.nextToken().replaceAll("\\\"", "");
+								customTypeName = st.nextToken().replaceAll("\\\"", "");
+							}
+							for (int i = 0; i < customTypes.size(); i++) {
+								if (customTypes.get(i).getSchema().equals(customTypeSchemaName)
+										&& customTypes.get(i).getName().equals(customTypeName)) {
+									attribute.setCustomType(customTypes.get(i));
+									break;
+								}
+							}
+							if (attribute.getCustomType() == null) {
+								attribute.setType(EntityAttributeType.TEXT);
+								attribute.setEnumType(columnTypeName);
+							}
+						}
+						attribute.setArray(Helper.isArray(columnTypeName));
+						attribute.setDefaultValue(columnDefault);
+						attribute.setLength(columnSize);
+						attribute.setPrecision(columnSize);
+						attribute.setRequired(nullable == 0);
+						attribute.setScale(decimalDigits);
+					}
+					columnsRs.close();
+					
+					List<EntityKey> keys = entity.getKeys();
+					ResultSet pkRs = dbmd.getPrimaryKeys(catalogName, schemaName, tableName);
+					while (pkRs.next()) {
+						String pkName = (String) pkRs.getObject("pk_name");
+						String columnName = (String) pkRs.getObject("column_name");
+						EntityAttribute attribute = null;
+						for (int i = 0; i < attributes.size(); i++) {
+							if (attributes.get(i).getName().equals(columnName)) {
+								attribute = attributes.get(i);
 								break;
 							}
 						}
-						if (attribute.getCustomType() == null) {
-							attribute.setType(EntityAttributeType.TEXT);
-							attribute.setEnumType(columnTypeName);
-						}
-					}
-					attribute.setArray(Helper.isArray(columnTypeName));
-					attribute.setDefaultValue(columnDefault);
-					attribute.setLength(columnSize);
-					attribute.setPrecision(columnSize);
-					attribute.setRequired(nullable == 0);
-					attribute.setScale(decimalDigits);
-				}
-				columnsRs.close();
-				
-				List<EntityKey> keys = entity.getKeys();
-				ResultSet pkRs = dbmd.getPrimaryKeys(catalogName, schemaName, tableName);
-				while (pkRs.next()) {
-					String pkName = (String) pkRs.getObject("pk_name");
-					String columnName = (String) pkRs.getObject("column_name");
-					EntityAttribute attribute = null;
-					for (int i = 0; i < attributes.size(); i++) {
-						if (attributes.get(i).getName().equals(columnName)) {
-							attribute = attributes.get(i);
-							break;
-						}
-					}
-					EntityKey key = null;
-					for (int i = 0; i < keys.size(); i++) {
-						if (keys.get(i).getName().equals(pkName)) {
-							key = keys.get(i);
-							break;
-						}
-					}
-					if (key == null) {
-						key = dataFactory.createEntityKey();
-						key.eSetContainer(entity);
-						keys.add(key);
-						key.setPrimaryKey(true);
-						key.setName(pkName);
-						key.setUnique(true);
-						key.setDocumentation("Model generated from Key '" + pkName + "'");
-					}
-					key.getAttributes().add(attribute);
-				}
-				pkRs.close();
-				
-				ResultSet indexesRs = dbmd.getIndexInfo(catalogName, schemaName, tableName, false, false);
-				while (indexesRs.next()) {
-					boolean unique = !(Boolean) indexesRs.getObject("non_unique");
-					String indexName = (String) indexesRs.getObject("index_name");
-					String columnName = (String) indexesRs.getObject("column_name");
-					EntityAttribute attribute = null;
-					for (int i = 0; i < attributes.size(); i++) {
-						if (attributes.get(i).getName().equals(columnName)) {
-							attribute = attributes.get(i);
-							break;
-						}
-					}
-					if (attribute != null) {
 						EntityKey key = null;
 						for (int i = 0; i < keys.size(); i++) {
-							if (keys.get(i).getName().equals(indexName)) {
+							if (keys.get(i).getName().equals(pkName)) {
 								key = keys.get(i);
 								break;
 							}
@@ -346,80 +343,119 @@ public class DatabaseHelper {
 							key = dataFactory.createEntityKey();
 							key.eSetContainer(entity);
 							keys.add(key);
-							key.setPrimaryKey(false);
-							key.setName(indexName);
-							key.setUnique(unique);
-							key.setDocumentation("Model generated from Key '" + indexName + "'");
+							key.setPrimaryKey(true);
+							key.setName(pkName);
+							key.setUnique(true);
+							key.setDocumentation("Model generated from Key '" + pkName + "'");
 						}
 						key.getAttributes().add(attribute);
 					}
+					pkRs.close();
+					
+					ResultSet indexesRs = dbmd.getIndexInfo(catalogName, schemaName, tableName, false, false);
+					while (indexesRs.next()) {
+						boolean unique = !(Boolean) indexesRs.getObject("non_unique");
+						String indexName = (String) indexesRs.getObject("index_name");
+						String columnName = (String) indexesRs.getObject("column_name");
+						EntityAttribute attribute = null;
+						for (int i = 0; i < attributes.size(); i++) {
+							if (attributes.get(i).getName().equals(columnName)) {
+								attribute = attributes.get(i);
+								break;
+							}
+						}
+						if (attribute != null) {
+							EntityKey key = null;
+							for (int i = 0; i < keys.size(); i++) {
+								if (keys.get(i).getName().equals(indexName)) {
+									key = keys.get(i);
+									break;
+								}
+							}
+							if (key == null) {
+								key = dataFactory.createEntityKey();
+								key.eSetContainer(entity);
+								keys.add(key);
+								key.setPrimaryKey(false);
+								key.setName(indexName);
+								key.setUnique(unique);
+								key.setDocumentation("Model generated from Key '" + indexName + "'");
+							}
+							key.getAttributes().add(attribute);
+						}
+					}
+					indexesRs.close();
 				}
-				indexesRs.close();
+				rs.close();
 			}
-			rs.close();
 			
 			// Get references
-			rs = dbmd.getTables(catalogName, schemaName, null, new String[] {"TABLE"});
-			
-			while (rs.next()) {
-				String tableName = (String) rs.getObject("table_name");
+			for (String schemaName : schemaNames) {
+				rs = dbmd.getTables(catalogName, schemaName, null, new String[] {"TABLE"});
 				
-				Entity entity = null;
-				for (int i = 0; i < entities.size(); i++) {
-					if (entities.get(i).getName().equals(tableName)) {
-						entity = entities.get(i);
-						break;
-					}
-				}
-				
-				List<EntityReference> references = entity.getReferences();
-				List<EntityAttribute> attributes = entity.getAttributes();
-				
-				ResultSet importedRs = dbmd.getImportedKeys(catalogName, schemaName, tableName);
-				while (importedRs.next()) {
-					String pkTableName = (String) importedRs.getObject("pktable_name");
-					String fkColumnName = (String) importedRs.getObject("fkcolumn_name");
-					String fkName = (String) importedRs.getObject("fk_name");
-					String pkName = (String) importedRs.getObject("pk_name");
+				while (rs.next()) {
+					String tableName = (String) rs.getObject("table_name");
 					
-					EntityReference reference = null;
-					for (int i = 0; i < references.size(); i++) {
-						if (references.get(i).getName().equals(fkName)) {
-							reference = references.get(i);
+					Entity entity = null;
+					for (int i = 0; i < entities.size(); i++) {
+						if (entities.get(i).getSchema().equals(schemaName)
+								&& entities.get(i).getName().equals(tableName)) {
+							entity = entities.get(i);
 							break;
 						}
 					}
-					if (reference == null) {
-						reference = dataFactory.createEntityReference();
-						reference.eSetContainer(entity);
-						references.add(reference);
-						reference.setName(fkName);
-						reference.setName(fkName);
-						reference.setDocumentation("Model generated from Reference (foreign key) '" + fkName + "'");
-						Entity referencedEntity = null;
-						for (int i = 0; i < entities.size(); i++) {
-							if (entities.get(i).getName().equals(pkTableName)) {
-								referencedEntity = entities.get(i);
-								break;
-							}
-						}
-						for (int i = 0; i < referencedEntity.getKeys().size(); i++) {
-							if (referencedEntity.getKeys().get(i).getName().equals(pkName)) {
-								reference.setReferencedKey(referencedEntity.getKeys().get(i));
-								break;
-							}
-						}
-					}
 					
-					for (int i = 0; i < attributes.size(); i++) {
-						if (attributes.get(i).getName().equals(fkColumnName)) {
-							reference.getAttributes().add(attributes.get(i));
-							break;
+					List<EntityReference> references = entity.getReferences();
+					List<EntityAttribute> attributes = entity.getAttributes();
+					
+					ResultSet importedRs = dbmd.getImportedKeys(catalogName, schemaName, tableName);
+					while (importedRs.next()) {
+						String pkTableSchema = (String) importedRs.getObject("pktable_schem");
+						String pkTableName = (String) importedRs.getObject("pktable_name");
+						String fkColumnName = (String) importedRs.getObject("fkcolumn_name");
+						String fkName = (String) importedRs.getObject("fk_name");
+						String pkName = (String) importedRs.getObject("pk_name");
+						
+						EntityReference reference = null;
+						for (int i = 0; i < references.size(); i++) {
+							if (references.get(i).getName().equals(fkName)) {
+								reference = references.get(i);
+								break;
+							}
+						}
+						if (reference == null) {
+							reference = dataFactory.createEntityReference();
+							reference.eSetContainer(entity);
+							references.add(reference);
+							reference.setName(fkName);
+							reference.setName(fkName);
+							reference.setDocumentation("Model generated from Reference (foreign key) '" + fkName + "'");
+							Entity referencedEntity = null;
+							for (int i = 0; i < entities.size(); i++) {
+								if (entities.get(i).getSchema().equals(pkTableSchema)
+										&& entities.get(i).getName().equals(pkTableName)) {
+									referencedEntity = entities.get(i);
+									break;
+								}
+							}
+							for (int i = 0; i < referencedEntity.getKeys().size(); i++) {
+								if (referencedEntity.getKeys().get(i).getName().equals(pkName)) {
+									reference.setReferencedKey(referencedEntity.getKeys().get(i));
+									break;
+								}
+							}
+						}
+						
+						for (int i = 0; i < attributes.size(); i++) {
+							if (attributes.get(i).getName().equals(fkColumnName)) {
+								reference.getAttributes().add(attributes.get(i));
+								break;
+							}
 						}
 					}
 				}
+				rs.close();
 			}
-			rs.close();
 		}
 		catch (Exception e) {
 			e.printStackTrace();

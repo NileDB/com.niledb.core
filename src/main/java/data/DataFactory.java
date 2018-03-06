@@ -15,77 +15,20 @@
  */
 package data;
 
-/**
- * <!-- begin-user-doc -->
- * The <b>Factory</b> for the model.
- * It provides a create method for each non-abstract class of the model.
- * <!-- end-user-doc -->
- * @see data.DataPackage
- * @generated
- */
 public interface DataFactory {
 
-	/**
-	 * Returns a new object of class '<em>Database</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Database</em>'.
-	 * @generated
-	 */
 	Database createDatabase();
 
-	/**
-	 * Returns a new object of class '<em>Entity</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Entity</em>'.
-	 * @generated
-	 */
 	Entity createEntity();
 
-	/**
-	 * Returns a new object of class '<em>Entity Attribute</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Entity Attribute</em>'.
-	 * @generated
-	 */
 	EntityAttribute createEntityAttribute();
 
-	/**
-	 * Returns a new object of class '<em>Entity Key</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Entity Key</em>'.
-	 * @generated
-	 */
 	EntityKey createEntityKey();
 
-	/**
-	 * Returns a new object of class '<em>Entity Reference</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Entity Reference</em>'.
-	 * @generated
-	 */
 	EntityReference createEntityReference();
 
-	/**
-	 * Returns a new object of class '<em>Custom Type</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Custom Type</em>'.
-	 * @generated
-	 */
 	CustomType createCustomType();
 
-	/**
-	 * Returns a new object of class '<em>Custom Type Attribute</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Custom Type Attribute</em>'.
-	 * @generated
-	 */
 	CustomTypeAttribute createCustomTypeAttribute();
 
-} //DataFactory
+}

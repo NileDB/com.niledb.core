@@ -81,7 +81,7 @@ public class GraphQLSqlUpdateHelper {
 				attributeCount++;
 			}
 			else if (fieldValue instanceof String) {
-				CustomTypeAttribute attribute = SchemaMap.customTypes.get(type.getName()).attributes.get(fieldName);
+				CustomTypeAttribute attribute = SchemaMap.customTypes.get(type.getSchema() + "." + type.getName()).attributes.get(fieldName);
 				CustomTypeAttributeType attributeType = attribute.getType();
 				switch (attributeType.getValue()) {
 					case CustomTypeAttributeType.BYTEA_VALUE:
@@ -132,7 +132,7 @@ public class GraphQLSqlUpdateHelper {
 				attributeCount++;
 			}
 			else if (fieldValue instanceof Object) {
-				SqlUpdateCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, SchemaMap.customTypes.get(type.getName()).attributes.get(fieldName).getCustomType(), relativePath + ".\"" + fieldName + "\"", environment);
+				SqlUpdateCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, SchemaMap.customTypes.get(type.getSchema() + "." + type.getName()).attributes.get(fieldName).getCustomType(), relativePath + ".\"" + fieldName + "\"", environment);
 				sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
 				sqlCommand.values.addAll(customTypeSqlCommand.values);
 				sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.valuePlaceholders;
@@ -145,9 +145,11 @@ public class GraphQLSqlUpdateHelper {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static SqlUpdateCommand getCommand(Field field, DataFetchingEnvironment environment, Entity entity, Database database) throws Exception {
 		
+		boolean multiSchema = database.getSchemaNames().size() > 1;
+		
 		SqlUpdateCommand sqlCommand = new SqlUpdateCommand();
 		
-		EntityMap entityMap = SchemaMap.entities.get(entity.getName());
+		EntityMap entityMap = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName());
 		
 		List<Argument> arguments = field.getArguments();
 		for (int i = 0; i < arguments.size(); i++) {
@@ -188,7 +190,7 @@ public class GraphQLSqlUpdateHelper {
 						attributeCount++;
 					}
 					else if (fieldValue instanceof String) {
-						EntityAttribute attribute = SchemaMap.entities.get(entity.getName()).attributes.get(fieldName);
+						EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
 						EntityAttributeType attributeType = attribute.getType();
 						switch (attributeType.getValue()) {
 							case EntityAttributeType.BYTEA_VALUE:
@@ -239,7 +241,7 @@ public class GraphQLSqlUpdateHelper {
 						attributeCount++;
 					}
 					else if (fieldValue instanceof Object) {
-						EntityAttribute attribute = SchemaMap.entities.get(entity.getName()).attributes.get(fieldName);
+						EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
 						SqlUpdateCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, attribute.getCustomType(), "\"" + fieldName + "\"", environment);
 						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
 						sqlCommand.values.addAll(customTypeSqlCommand.values);
@@ -255,7 +257,7 @@ public class GraphQLSqlUpdateHelper {
 			}
 		}
 		
-		sqlCommand.update = "UPDATE \"" + entity.getName() + "\" AS \"" + entity.getName() + "_1\" ";
+		sqlCommand.update = "UPDATE \"" + (multiSchema ? entity.getSchema() + "\".\"" : "") + entity.getName() + "\" AS \"" + entity.getName() + "_1\" ";
 		
 		int attributeCount = 0;
 		List<Selection> selections = field.getSelectionSet().getSelections();

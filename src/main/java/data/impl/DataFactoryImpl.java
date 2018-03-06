@@ -17,91 +17,45 @@ package data.impl;
 
 import data.*;
 
-/**
- * <!-- begin-user-doc -->
- * An implementation of the model <b>Factory</b>.
- * <!-- end-user-doc -->
- * @generated
- */
 public class DataFactoryImpl implements DataFactory {
-	/**
-	 * Creates an instance of the factory.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
+
 	public DataFactoryImpl() {
 		super();
 	}
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public Database createDatabase() {
 		DatabaseImpl database = new DatabaseImpl();
 		return database;
 	}
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public Entity createEntity() {
 		EntityImpl entity = new EntityImpl();
 		return entity;
 	}
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EntityAttribute createEntityAttribute() {
 		EntityAttributeImpl entityAttribute = new EntityAttributeImpl();
 		return entityAttribute;
 	}
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EntityKey createEntityKey() {
 		EntityKeyImpl entityKey = new EntityKeyImpl();
 		return entityKey;
 	}
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EntityReference createEntityReference() {
 		EntityReferenceImpl entityReference = new EntityReferenceImpl();
 		return entityReference;
 	}
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public CustomType createCustomType() {
 		CustomTypeImpl customType = new CustomTypeImpl();
 		return customType;
 	}
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public CustomTypeAttribute createCustomTypeAttribute() {
 		CustomTypeAttributeImpl customTypeAttribute = new CustomTypeAttributeImpl();
 		return customTypeAttribute;
 	}
 
-} //DataFactoryImpl
+}

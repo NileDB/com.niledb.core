@@ -13,8 +13,8 @@
 	"service.redirectFromPort": 8080,
 	"service.redirectUrl": "https://localhost:8443",
 	
-	"db.name": "Adventureworks",
-	"db.schema.name": "person",
+	"db.name": "nile",
+	"db.schema.names": ["public", "a", "b"],
 	"db.host": "localhost",
 	"db.port": 5432,
 	

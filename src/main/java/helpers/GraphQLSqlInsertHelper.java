@@ -81,7 +81,7 @@ public class GraphQLSqlInsertHelper {
 				attributeCount++;
 			}
 			else if (fieldValue instanceof String) {
-				CustomTypeAttribute attribute = SchemaMap.customTypes.get(type.getName()).attributes.get(fieldName);
+				CustomTypeAttribute attribute = SchemaMap.customTypes.get(type.getSchema() + "." + type.getName()).attributes.get(fieldName);
 				CustomTypeAttributeType attributeType = attribute.getType();
 				switch (attributeType.getValue()) {
 					case CustomTypeAttributeType.BYTEA_VALUE:
@@ -132,7 +132,7 @@ public class GraphQLSqlInsertHelper {
 				attributeCount++;
 			}
 			else if (fieldValue instanceof Object) {
-				SqlInsertCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, SchemaMap.customTypes.get(type.getName()).attributes.get(fieldName).getCustomType(), relativePath + ".\"" + fieldName + "\"", environment);
+				SqlInsertCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, SchemaMap.customTypes.get(type.getSchema() + "." + type.getName()).attributes.get(fieldName).getCustomType(), relativePath + ".\"" + fieldName + "\"", environment);
 				sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
 				sqlCommand.values.addAll(customTypeSqlCommand.values);
 				sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.valuePlaceholders;
@@ -145,9 +145,11 @@ public class GraphQLSqlInsertHelper {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static SqlInsertCommand getCommand(Field field, DataFetchingEnvironment environment, Entity entity, Database database) throws Exception {
 		
+		boolean multiSchema = database.getSchemaNames().size() > 1;
+		
 		SqlInsertCommand sqlCommand = new SqlInsertCommand();
 		
-		EntityMap entityMap = SchemaMap.entities.get(entity.getName());
+		EntityMap entityMap = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName());
 		
 		List<Argument> arguments = field.getArguments();
 		for (int i = 0; i < arguments.size(); i++) {
@@ -185,7 +187,7 @@ public class GraphQLSqlInsertHelper {
 						attributeCount++;
 					}
 					else if (fieldValue instanceof String) {
-						EntityAttribute attribute = SchemaMap.entities.get(entity.getName()).attributes.get(fieldName);
+						EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
 						EntityAttributeType attributeType = attribute.getType();
 						switch (attributeType.getValue()) {
 							case EntityAttributeType.BYTEA_VALUE:
@@ -236,7 +238,7 @@ public class GraphQLSqlInsertHelper {
 						attributeCount++;
 					}
 					else if (fieldValue instanceof Object) {
-						EntityAttribute attribute = SchemaMap.entities.get(entity.getName()).attributes.get(fieldName);
+						EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
 						SqlInsertCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, attribute.getCustomType(), "\"" + fieldName + "\"", environment);
 						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
 						sqlCommand.values.addAll(customTypeSqlCommand.values);
@@ -247,7 +249,7 @@ public class GraphQLSqlInsertHelper {
 			}
 		}
 		
-		sqlCommand.insert = "INSERT INTO \"" + entity.getName() + "\" ";
+		sqlCommand.insert = "INSERT INTO \"" + (multiSchema ? entity.getSchema() + "\".\"" : "") + entity.getName() + "\" ";
 		
 		int attributeCount = 0;
 		List<Selection> selections = field.getSelectionSet().getSelections();

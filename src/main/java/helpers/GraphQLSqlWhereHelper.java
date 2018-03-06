@@ -33,7 +33,7 @@ import helpers.maps.SchemaMap;
  * @author NileDB, Inc.
  */
 public class GraphQLSqlWhereHelper {
-
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static SqlWhere getAttributeWhereCommand(ObjectField field, EntityAttribute attribute, Database database, int level, DataFetchingEnvironment environment) {
 		SqlWhere where = new SqlWhere();
@@ -339,7 +339,7 @@ public class GraphQLSqlWhereHelper {
 				default:
 					subWhere = getAttributeWhereCommand(
 							field, 
-							SchemaMap.entities.get(entity.getName()).attributes.get(field.getName()), 
+							SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(field.getName()), 
 							database,
 							level,
 							environment);

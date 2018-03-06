@@ -45,9 +45,11 @@ public class GraphQLSqlSelectHelper {
 	public static SqlSelectCommand getCommand(Field field, DataFetchingEnvironment environment, Entity entity,
 			Database database, int level, boolean limitOffsetEnabled) {
 		
+		boolean multiSchema = database.getSchemaNames().size() > 1;
+		
 		SqlSelectCommand sqlCommand = new SqlSelectCommand();
 		
-		EntityMap entityMap = SchemaMap.entities.get(entity.getName());
+		EntityMap entityMap = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName());
 		
 		List<Argument> arguments = field.getArguments();
 		Map<String, Object> argumentsMap = new HashMap<String, Object>();
@@ -57,7 +59,7 @@ public class GraphQLSqlSelectHelper {
 		}
 		
 		sqlCommand.select = "SELECT ";
-		sqlCommand.from = " FROM \"" + entity.getName() + "\" AS \"" + entity.getName() + "_" + level + "\"";
+		sqlCommand.from = " FROM \"" + (multiSchema ? entity.getSchema() + "\".\"" : "") + entity.getName() + "\" AS \"" + entity.getName() + "_" + level + "\"";
 		
 		// Pagination
 		if (limitOffsetEnabled) {
