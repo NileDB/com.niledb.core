@@ -71,7 +71,8 @@ public class DatabaseHelper {
 				config.setJdbcUrl("jdbc:postgresql://"
 						+ ConfigHelper.get(ConfigHelper.DB_HOST, "localhost") + ":"
 						+ ConfigHelper.get(ConfigHelper.DB_PORT, 5432) + "/"
-						+ ConfigHelper.get(ConfigHelper.DB_NAME, "nile"));
+						+ ConfigHelper.get(ConfigHelper.DB_NAME, "nile") + "?"
+						+ "currentSchema=" + ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAME, "public"));
 				config.setUsername((String) ConfigHelper.get(ConfigHelper.DB_USERNAME, "postgres"));
 				config.setPassword((String) ConfigHelper.get(ConfigHelper.DB_PASSWORD, "postgres"));
 				config.addDataSourceProperty("cachePrepStmts", "true");
