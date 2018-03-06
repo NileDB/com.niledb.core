@@ -187,30 +187,30 @@ NileDB Core is packaged as a fat jar. In order to run, you need to execute the f
 
 Using the config.json file, you can configure the following properties:
 
-* <b>"service.host"</b>: Address where server will listen for GraphQL API requests. Default value: "localhost",
-* <b>"service.port"</b>: Port number where server will listen for GraphQL API requests. Default value: 8080,
-* <b>"service.ssl"</b>: SSL enabled. Default value: false,
-* <b>"service.ssl.autoGenerateCert"</b>: SSL auto generated certificates. Default value: false,
-* <b>"service.ssl.key.path"</b>: SSL key path. Default value: "misc/ssl/private.pem",
-* <b>"service.ssl.cert.path"</b>: SSL certificate path. Default value: "misc/ssl/public.pem",
-* <b>"service.authenticate"</b>: Basic authentication enabled. Default value: false,
-* <b>"service.username"</b>: Basic authentication username. Default value: "niledb",
-* <b>"service.password"</b>: Basic authentication password. Default value: "1234",
-* <b>"service.query.maxResults"</b>: Maximum number of results returned by a GraphQL query. Default value: 100,
-* <b>"service.forceSsl"</b>: Force SSL use, redirecting from non-SSL url. Default value: false,
-* <b>"service.redirectFromPort"</b>: Source port number from where the server will redirect. Default value: 8080,
-* <b>"service.redirectUrl"</b>: Target URL where the server will redirect to. Default value: "https://localhost:8443",
-* <b>"db.name"</b>: Database name. Default value: "pagila",
-* <b>"db.schema.name"</b>: Schema name. Default value: "public",
-* <b>"db.host"</b>: PostgreSQL server host address. Default value: "localhost",
-* <b>"db.port"</b>: PostgreSQL server port number. Default value: 5432,
-* <b>"db.replica.host"</b>: PostgreSQL read-only replica host address. Default value: "localhost",
-* <b>"db.replica.port"</b>: PostgreSQL read-only replica port number. Default value: 5432,
-* <b>"db.username"</b>: PostgreSQL username. Default value: "postgres",
-* <b>"db.password"</b>: PostgreSQL password. Default value: "postgres",
-* <b>"model.path"</b>: Not implemented yet. Default value: "model.xmi",
-* <b>"model.createModelFromDb"</b>: Not implemented yet. Default value: true,
-* <b>"model.createDbFromModel"</b>: Not implemented yet. Default value: true
+* <b>"service.host"</b>: Address where server will listen for GraphQL API requests. Default value: "localhost".
+* <b>"service.port"</b>: Port number where server will listen for GraphQL API requests. Default value: 8080.
+* <b>"service.ssl"</b>: SSL enabled. Default value: false.
+* <b>"service.ssl.autoGenerateCert"</b>: SSL auto generated certificates. Default value: false.
+* <b>"service.ssl.key.path"</b>: SSL key path. Default value: "misc/ssl/private.pem".
+* <b>"service.ssl.cert.path"</b>: SSL certificate path. Default value: "misc/ssl/public.pem".
+* <b>"service.authenticate"</b>: Basic authentication enabled. Default value: false.
+* <b>"service.username"</b>: Basic authentication username. Default value: "niledb".
+* <b>"service.password"</b>: Basic authentication password. Default value: "1234".
+* <b>"service.query.maxResults"</b>: Maximum number of results returned by a GraphQL query. Default value: 100.
+* <b>"service.forceSsl"</b>: Force SSL use, redirecting from non-SSL url. Default value: false.
+* <b>"service.redirectFromPort"</b>: Source port number from where the server will redirect. Default value: 8080.
+* <b>"service.redirectUrl"</b>: Target URL where the server will redirect to. Default value: "https://localhost:8443".
+* <b>"db.name"</b>: Database name. Default value: "pagila".
+* <b>"db.schema.name"</b>: Schema name. Default value: "public".
+* <b>"db.host"</b>: PostgreSQL server host address. Default value: "localhost".
+* <b>"db.port"</b>: PostgreSQL server port number. Default value: 5432.
+* <b>"db.replica.host"</b>: PostgreSQL read-only replica host address. Default value: "localhost".
+* <b>"db.replica.port"</b>: PostgreSQL read-only replica port number. Default value: 5432.
+* <b>"db.username"</b>: PostgreSQL username. Default value: "postgres".
+* <b>"db.password"</b>: PostgreSQL password. Default value: "postgres".
+* <b>"model.path"</b>: Not implemented yet. Default value: "model.xmi".
+* <b>"model.createModelFromDb"</b>: Not implemented yet. Default value: true.
+* <b>"model.createDbFromModel"</b>: Not implemented yet. Default value: true.
 
 ### Docker Compose package
 
