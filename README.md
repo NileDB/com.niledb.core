@@ -166,11 +166,75 @@ In this short tutorial, we have explored the following NileDB Core features:
 
 Feel free to give us your feedback in order to improve the available features. Thanks.
 
-### Documentation
+### Build
 
-For details about how to use `NileDB Core` please look at the documentation: Coming soon...
+In order to build NileDB Core, you need [Java](https://www.java.com/en/download/) to be installed previously.
 
-Please take a look at our [releases](https://github.com/niledb/core/releases) if you want to learn more about new releases and the changelog.
+First of all, you need to download the project:
+
+    > git clone https://github.com/NileDB/com.niledb.core.git
+    > cd com.niledb.core
+
+Now, you can build the project:
+
+    > ./gradlew build
+
+### Run
+
+NileDB Core is packaged as a fat jar. In order to run, you need to execute the following command:
+
+    > java -jar build/libs/com.niledb.core-0.8.2-fat.jar --conf config.json
+
+Using the config.json file, you can configure the following properties:
+
+* <b>"service.host"</b>: Address where server will listen for GraphQL API requests. Default value: "localhost",
+* <b>"service.port"</b>: Port number where server will listen for GraphQL API requests. Default value: 8080,
+* <b>"service.ssl"</b>: SSL enabled. Default value: false,
+* <b>"service.ssl.autoGenerateCert"</b>: SSL auto generated certificates. Default value: false,
+* <b>"service.ssl.key.path"</b>: SSL key path. Default value: "misc/ssl/private.pem",
+* <b>"service.ssl.cert.path"</b>: SSL certificate path. Default value: "misc/ssl/public.pem",
+* <b>"service.authenticate"</b>: Basic authentication enabled. Default value: false,
+* <b>"service.username"</b>: Basic authentication username. Default value: "niledb",
+* <b>"service.password"</b>: Basic authentication password. Default value: "1234",
+* <b>"service.query.maxResults"</b>: Maximum number of results returned by a GraphQL query. Default value: 100,
+* <b>"service.forceSsl"</b>: Force SSL use, redirecting from non-SSL url. Default value: false,
+* <b>"service.redirectFromPort"</b>: Source port number from where the server will redirect. Default value: 8080,
+* <b>"service.redirectUrl"</b>: Target URL where the server will redirect to. Default value: "https://localhost:8443",
+	
+* <b>"db.name"</b>: Database name. Default value: "pagila",
+* <b>"db.schema.name"</b>: Schema name. Default value: "public",
+* <b>"db.host"</b>: PostgreSQL server host address. Default value: "localhost",
+* <b>"db.port"</b>: PostgreSQL server port number. Default value: 5432,
+	
+* <b>"db.replica.host"</b>: PostgreSQL read-only replica host address. Default value: "localhost",
+* <b>"db.replica.port"</b>: PostgreSQL read-only replica port number. Default value: 5432,
+	
+* <b>"db.username"</b>: PostgreSQL username. Default value: "postgres",
+* <b>"db.password"</b>: PostgreSQL password. Default value: "postgres",
+	
+* <b>"model.path"</b>: Not implemented yet. Default value: "model.xmi",
+* <b>"model.createModelFromDb"</b>: Not implemented yet. Default value: true,
+* <b>"model.createDbFromModel"</b>: Not implemented yet. Default value: true
+
+### Docker Compose package
+
+If you don't have an available PostgreSQL server, you can run a docker-compose pre-packaged version also:
+
+    > docker-compose up
+    
+This will start two containers, one with PostgreSQL server and the other with GraphQL server, and it will create an empty database "niledb".
+
+You can connect to the database with the command:
+
+    > docker exec -it db psql -U postgres niledb
+
+Once you have finished adding tables, indexes, custom types, constraints, ..., you can refresh GraphQL schema. Open a browser in http://localhost and type:
+
+    mutation {
+      __reloadSchema
+    }
+    
+Now, refresh your browser, and the API will be available.
 
 ### Code of Conduct
 
