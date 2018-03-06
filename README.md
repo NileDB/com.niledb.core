@@ -200,18 +200,14 @@ Using the config.json file, you can configure the following properties:
 * <b>"service.forceSsl"</b>: Force SSL use, redirecting from non-SSL url. Default value: false,
 * <b>"service.redirectFromPort"</b>: Source port number from where the server will redirect. Default value: 8080,
 * <b>"service.redirectUrl"</b>: Target URL where the server will redirect to. Default value: "https://localhost:8443",
-	
 * <b>"db.name"</b>: Database name. Default value: "pagila",
 * <b>"db.schema.name"</b>: Schema name. Default value: "public",
 * <b>"db.host"</b>: PostgreSQL server host address. Default value: "localhost",
 * <b>"db.port"</b>: PostgreSQL server port number. Default value: 5432,
-	
 * <b>"db.replica.host"</b>: PostgreSQL read-only replica host address. Default value: "localhost",
 * <b>"db.replica.port"</b>: PostgreSQL read-only replica port number. Default value: 5432,
-	
 * <b>"db.username"</b>: PostgreSQL username. Default value: "postgres",
 * <b>"db.password"</b>: PostgreSQL password. Default value: "postgres",
-	
 * <b>"model.path"</b>: Not implemented yet. Default value: "model.xmi",
 * <b>"model.createModelFromDb"</b>: Not implemented yet. Default value: true,
 * <b>"model.createDbFromModel"</b>: Not implemented yet. Default value: true
