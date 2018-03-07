@@ -106,7 +106,7 @@ public class GraphQLSqlSelectHelper {
 						List<EntityAttribute> referencedAttributes = referencedKey.getAttributes();
 						Entity referencedEntity = (Entity) referencedKey.eContainer();
 						
-						sqlCommand.select += (attributeCount > 0 ? ", " : "") + "\"" + alias + "\"";
+						sqlCommand.select += (attributeCount > 0 ? ", " : "") + "\"" + alias + "_" + (level + 1) + "\" AS \"" + alias + "\"";
 						sqlCommand.addedDirectReferences.put(alias, true);
 						attributeCount++;
 						
@@ -118,7 +118,7 @@ public class GraphQLSqlSelectHelper {
 						String sqlOn = "";
 						for (int j = 0; j < reference.getAttributes().size(); j++) {
 							sqlOn += (j > 0 ? " AND " : "") + "\"" + entity.getName() + "_" + level + "\".\""
-									+ referenceAttributes.get(j).getName() + "\" = \"" + alias + "\".\""
+									+ referenceAttributes.get(j).getName() + "\" = \"" + alias + "_" + (level + 1) + "\".\""
 									+ referencedAttributes.get(j).getName() + "\"";
 							
 							if (sqlSubcommand.addedAttributes.get(referencedAttributes.get(j).getName()) == null) {
@@ -130,7 +130,7 @@ public class GraphQLSqlSelectHelper {
 						
 						EnumValue joinType = (EnumValue) childArgumentsMap.get("joinType");
 						sqlCommand.from += (joinType != null && joinType.getName().equals("INNER") ? " INNER" : " LEFT")
-								+ " JOIN (" + sqlSubcommand.toString() + ") AS \"" + alias + "\" ON "
+								+ " JOIN (" + sqlSubcommand.toString() + ") AS \"" + alias + "_" + (level + 1) + "\" ON "
 								+ sqlOn;
 						sqlCommand.fromParameters.addAll(sqlSubcommand.getParameters());
 					} 

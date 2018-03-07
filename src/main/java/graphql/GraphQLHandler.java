@@ -25,7 +25,6 @@ import java.lang.management.OperatingSystemMXBean;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -99,7 +98,8 @@ public class GraphQLHandler {
 		
 		logger.info("Reloading GraphQL schema from database...");
 		
-		List<String> schemaNames = ((JsonArray) ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAMES, new JsonArray().add("public"))).getList();
+		@SuppressWarnings("unchecked")
+		List<String> schemaNames = (List<String>) ((JsonArray) ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAMES, new JsonArray().add("public"))).getList();
 		boolean multiSchema = schemaNames.size() > 1;
 		
 		final Database database = DatabaseHelper.getDatabaseModel(
