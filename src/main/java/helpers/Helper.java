@@ -17,6 +17,10 @@ package helpers;
 
 import java.util.Map;
 
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.MACVerifier;
+
 import data.CustomTypeAttributeType;
 import data.EntityAttributeType;
 import graphql.language.ArrayValue;
@@ -30,11 +34,42 @@ import graphql.language.StringValue;
 import graphql.language.Value;
 import graphql.language.VariableReference;
 import graphql.schema.DataFetchingEnvironment;
+import io.vertx.core.json.JsonObject;
 
 /**
  * @author NileDB, Inc.
  */
 public class Helper {
+	
+	public static String getRole(String jwtToken) {
+		if ((Boolean) ConfigHelper.get(ConfigHelper.SECURITY_ENABLED, false)) {
+			if (jwtToken != null) {
+				try {
+					JWSObject jwsObject = JWSObject.parse(jwtToken);
+					
+					JWSVerifier verifier = new MACVerifier(((String) ConfigHelper.get(ConfigHelper.SECURITY_JWT_SECRET, "password_of_at_least_32_characters")).getBytes());
+					boolean verified = jwsObject.verify(verifier);
+					
+					if (verified) {
+						return new JsonObject(jwsObject.getPayload().toString()).getString("rolename");
+					}
+					else {
+						return null;
+					}
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+					return (String) ConfigHelper.get(ConfigHelper.SECURITY_ANONYMOUS_ROLENAME, null);
+				}
+			}
+			else {
+				return (String) ConfigHelper.get(ConfigHelper.SECURITY_ANONYMOUS_ROLENAME, null);
+			}
+		}
+		else {
+			return null;
+		}
+	}
 	
 	@SuppressWarnings("unchecked")
 	public static Object resolveValue(@SuppressWarnings("rawtypes") Value value, DataFetchingEnvironment environment) {

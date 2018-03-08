@@ -24,6 +24,10 @@
 	"db.username": "postgres",
 	"db.password": "postgres",
 	
+	"security.enabled": true,
+	"security.anonymous.rolename": "anonymous",
+	"security.jwt.secret": "password_of_at_least_32_characters",
+	
 	"model.path": "model.xmi",
 	"model.createModelFromDb": true,
 	"model.createDbFromModel": true

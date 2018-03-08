@@ -46,6 +46,9 @@ public class ConfigHelper {
 	public final static String DB_REPLICA_PORT = "db.replica.port";
 	public final static String DB_USERNAME = "db.username";
 	public final static String DB_PASSWORD = "db.password";
+	public final static String SECURITY_ENABLED = "security.enabled";
+	public final static String SECURITY_ANONYMOUS_ROLENAME = "security.anonymous.rolename";
+	public final static String SECURITY_JWT_SECRET = "security.jwt.secret";
 	public final static String MODEL_PATH = "model.path";
 	public final static String MODEL_CREATE_MODEL_FROM_DB = "model.createModelFromDb";
 	public final static String MODEL_CREATE_DB_FROM_MODEL = "model.createDbFromModel";

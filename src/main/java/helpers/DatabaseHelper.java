@@ -107,6 +107,19 @@ public class DatabaseHelper {
 									(String) ConfigHelper.get(ConfigHelper.DB_PASSWORD, "postgres"));
 							Statement statement = connection.createStatement();
 							statement.execute("CREATE DATABASE " + ConfigHelper.get(ConfigHelper.DB_NAME, "nile"));
+							
+							try {
+								if ((Boolean) ConfigHelper.get(ConfigHelper.SECURITY_ENABLED, false)) {
+									String anonymousUsername = (String) ConfigHelper.get(ConfigHelper.SECURITY_ANONYMOUS_ROLENAME, null);
+									if (anonymousUsername != null
+											&& !anonymousUsername.equals("")) {
+										statement.execute("CREATE ROLE " + anonymousUsername);
+									}
+								}
+							}
+							catch (Exception e2) {
+								e2.printStackTrace();
+							}
 						}
 						catch (SQLException e2) {
 							e2.printStackTrace();
@@ -136,7 +149,21 @@ public class DatabaseHelper {
 	}
 	
 	public static Connection getConnection() throws Exception {
-		return dataSource.getConnection();
+		Connection connection = dataSource.getConnection();
+		connection.createStatement().execute("RESET ROLE");
+		return connection;
+	}
+	
+	public static Connection getConnection(String jwtToken) throws Exception {
+		Connection connection = dataSource.getConnection();
+		String role = Helper.getRole(jwtToken);
+		if (role != null) {
+			connection.createStatement().execute("SET ROLE " + role);
+		}
+		else {
+			connection.createStatement().execute("RESET ROLE");
+		}
+		return connection;
 	}
 	
 	public static Database getDatabaseModel(String databaseHost, int databasePort, String databaseName, List<String> schemaNames) {

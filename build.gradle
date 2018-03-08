@@ -40,6 +40,7 @@ dependencies {
 	compile "org.postgresql:postgresql:42.2.1"
 	compile "org.apache.commons:commons-lang3:3.7"
 	compile "com.zaxxer:HikariCP:2.7.8"
+	compile "com.nimbusds:oauth2-oidc-sdk:5.56"
 	
 	testCompile "junit:junit:4.12"
 	testCompile "io.vertx:vertx-unit:$vertxVersion"

@@ -22,6 +22,7 @@ import static graphql.schema.GraphQLArgument.newArgument;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,10 +30,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import javax.xml.bind.DatatypeConverter;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.MACSigner;
 
 import data.CustomType;
 import data.CustomTypeAttribute;
@@ -44,6 +54,7 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.GraphQLError;
+import graphql.language.Argument;
 import graphql.language.Field;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -116,6 +127,84 @@ public class GraphQLHandler {
 		GraphQLObjectType.Builder mutationBuilder = newObject()
 				.name("Mutation")
 				.description("Operations that make changes to the system.")
+				.field(newFieldDefinition()
+						.name("__login")
+						.description("It logins as a user into the system and returns a token that must be used in \"authorization\" variable when invoking GraphQL services.")
+						.argument(newArgument()
+								.name("username")
+								.description("The username.")
+								.type(GraphQLNonNull.nonNull(GraphQLString)))
+						.argument(newArgument()
+								.name("password")
+								.description("The password.")
+								.type(GraphQLNonNull.nonNull(GraphQLString)))
+						.type(GraphQLString)
+						.dataFetcher(new DataFetcher<String>() {
+							@Override
+							public String get(DataFetchingEnvironment environment) {
+								List<Field> fields = environment.getFields();
+								String jwtToken = null;
+								Connection connection = null;
+								try {
+									String username = null;
+									String password = null;
+									
+									Field field = fields.get(0);
+									for (int i = 0; i < field.getArguments().size(); i++) {
+										Argument argument = field.getArguments().get(i);
+										if (argument.getName().equals("username")) {
+											username = (String) Helper.resolveValue(argument.getValue(), environment);
+										}
+										else if (argument.getName().equals("password")) {
+											password = (String) Helper.resolveValue(argument.getValue(), environment);
+										}
+									}
+									
+									MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+									messageDigest.update((password + username).getBytes());
+									password = "md5" + DatatypeConverter.printHexBinary(messageDigest.digest()).toLowerCase();
+									System.out.println(password);
+									connection = DatabaseHelper.getConnection();
+									StringBuffer sql = new StringBuffer()
+											.append("SELECT usename ")
+											.append("FROM   pg_shadow ")
+											.append("WHERE  usename = ? ")
+											.append("AND    passwd = ?");
+									
+									PreparedStatement ps = connection.prepareStatement(sql.toString());
+									ps.setString(1, username);
+									ps.setString(2, password);
+									ResultSet rs = ps.executeQuery();
+									
+									if (rs.next()) {
+										Payload payload = new Payload(new JsonObject().put("username", username).encode());
+										JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
+										JWSObject jwsObject = new JWSObject(header, payload);
+										JWSSigner signer = new MACSigner(((String) ConfigHelper.get(ConfigHelper.SECURITY_JWT_SECRET, "password_of_at_least_32_characters")).getBytes());
+										
+										jwsObject.sign(signer);
+										
+										jwtToken = jwsObject.serialize();
+									}
+								}
+								catch (Exception e) {
+									e.printStackTrace();
+									throw new RuntimeException(e.getMessage());
+								}
+								finally {
+									try {
+										if (connection != null) {
+											connection.close();
+										}
+									}
+									catch (Exception e) {
+										e.printStackTrace();
+										throw new RuntimeException(e.getMessage());
+									}
+								}
+								return jwtToken;
+							}
+						}))
 				.field(newFieldDefinition()
 						.name("__reloadSchema")
 						.description("It reloades the GraphQL schema from database.")
@@ -208,13 +297,14 @@ public class GraphQLHandler {
 							.type(GraphQLInt))
 					
 					.dataFetcher(new DataFetcher<Object>() {
+						@SuppressWarnings("unchecked")
 						@Override
 						public Object get(DataFetchingEnvironment environment) {
 							List<Field> fields = environment.getFields();
 							
 							Connection connection = null;
 							try {
-								connection = DatabaseHelper.getConnection();
+								connection = DatabaseHelper.getConnection((String) ((Map<String, Object>) environment.getContext()).get("authorization"));
 								
 								Field field = fields.get(0);
 								
@@ -275,13 +365,14 @@ public class GraphQLHandler {
 							.description("The " + entity.getName() + " entity to create.")
 							.type(GraphQLNonNull.nonNull(GraphQLMutationSchemaHelper.getEntityGraphqlCreateInputObjectType(database, entity, multiSchema))))
 					.dataFetcher(new DataFetcher<Object>() {
+						@SuppressWarnings("unchecked")
 						@Override
 						public Object get(DataFetchingEnvironment environment) {
 							List<Field> fields = environment.getFields();
 							
 							Connection connection = null;
 							try {
-								connection = DatabaseHelper.getConnection();
+								connection = DatabaseHelper.getConnection((String) ((Map<String, Object>) environment.getContext()).get("authorization"));
 								
 								Field field = fields.get(0);
 								
@@ -337,13 +428,14 @@ public class GraphQLHandler {
 							.description("Search criteria for selecting the entities that must be updated.")
 							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType"))))
 					.dataFetcher(new DataFetcher<Object>() {
+						@SuppressWarnings("unchecked")
 						@Override
 						public Object get(DataFetchingEnvironment environment) {
 							List<Field> fields = environment.getFields();
 							
 							Connection connection = null;
 							try {
-								connection = DatabaseHelper.getConnection();
+								connection = DatabaseHelper.getConnection((String) ((Map<String, Object>) environment.getContext()).get("authorization"));
 								
 								Field field = fields.get(0);
 								
@@ -400,13 +492,14 @@ public class GraphQLHandler {
 							.description("Search criteria for selecting the entities that must be deleted.")
 							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType"))))
 					.dataFetcher(new DataFetcher<Object>() {
+						@SuppressWarnings("unchecked")
 						@Override
 						public Object get(DataFetchingEnvironment environment) {
 							List<Field> fields = environment.getFields();
 							
 							Connection connection = null;
 							try {
-								connection = DatabaseHelper.getConnection();
+								connection = DatabaseHelper.getConnection((String) ((Map<String, Object>) environment.getContext()).get("authorization"));
 								
 								Field field = fields.get(0);
 								
