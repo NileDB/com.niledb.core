@@ -28,12 +28,8 @@ public class RoleChangePassword {
 					.type(GraphQLNonNull.nonNull(GraphQLString)))
 			.argument(newArgument()
 					.name("password")
-					.description("The password.")
+					.description("The password. The password is always stored encrypted in the system. If the presented password string is already in MD5-encrypted or SCRAM-encrypted format, then it is stored as-is.")
 					.type(GraphQLString))
-			.argument(newArgument()
-					.name("encrypted")
-					.description("")
-					.type(GraphQLBoolean))
 			.type(GraphQLString)
 			.dataFetcher(new DataFetcher<String>() {
 				@SuppressWarnings("unchecked")
@@ -44,7 +40,6 @@ public class RoleChangePassword {
 					try {
 						String rolename = null;
 						String password = null;
-						boolean encrypted = false;
 						
 						Field field = fields.get(0);
 						for (int i = 0; i < field.getArguments().size(); i++) {
@@ -54,9 +49,6 @@ public class RoleChangePassword {
 							}
 							else if (argument.getName().equals("password")) {
 								password = (String) Helper.resolveValue(argument.getValue(), environment);
-							}
-							else if (argument.getName().equals("encrypted")) {
-								encrypted = (Boolean) Helper.resolveValue(argument.getValue(), environment);
 							}
 						}
 						
@@ -68,7 +60,7 @@ public class RoleChangePassword {
 							throw new Exception("Incorrect password. Please, don't use single quote.");
 						}
 						connection = DatabaseHelper.getConnection((String) ((Map<String, Object>) environment.getContext()).get("authorization"));
-						PreparedStatement ps = connection.prepareStatement("ALTER ROLE " + rolename + (encrypted ? " ENCRYPTED" : "") + " PASSWORD" + (password == null ? " null" : " '" + password + "'"));
+						PreparedStatement ps = connection.prepareStatement("ALTER ROLE " + rolename + " PASSWORD" + (password == null ? " null" : " '" + password + "'"));
 						ps.execute();
 					}
 					catch (Exception e) {

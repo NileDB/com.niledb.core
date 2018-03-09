@@ -1,6 +1,5 @@
 package security.fielddefinitions;
 
-import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -32,12 +31,8 @@ public class RoleCreate {
 					.type(GraphQLNonNull.nonNull(GraphQLString)))
 			.argument(newArgument()
 					.name("password")
-					.description("The password.")
+					.description("The password. The password is always stored encrypted in the system. If the presented password string is already in MD5-encrypted or SCRAM-encrypted format, then it is stored as-is.")
 					.type(GraphQLString))
-			.argument(newArgument()
-					.name("encrypted")
-					.description("")
-					.type(GraphQLBoolean))
 			.argument(newArgument()
 					.name("roles")
 					.description("The list of granted roles.")
@@ -53,7 +48,6 @@ public class RoleCreate {
 						String rolename = null;
 						String password = null;
 						List<String> roles = null;
-						boolean encrypted = false;
 						
 						Field field = fields.get(0);
 						for (int i = 0; i < field.getArguments().size(); i++) {
@@ -63,9 +57,6 @@ public class RoleCreate {
 							}
 							else if (argument.getName().equals("password")) {
 								password = (String) Helper.resolveValue(argument.getValue(), environment);
-							}
-							else if (argument.getName().equals("encrypted")) {
-								encrypted = (Boolean) Helper.resolveValue(argument.getValue(), environment);
 							}
 							else if (argument.getName().equals("roles")) {
 								List<Value> values = (List<Value>) Helper.resolveValue(argument.getValue(), environment);
@@ -91,7 +82,7 @@ public class RoleCreate {
 						}
 						connection = DatabaseHelper.getConnection((String) ((Map<String, Object>) environment.getContext()).get("authorization"));
 						connection.setAutoCommit(false);
-						PreparedStatement ps = connection.prepareStatement("CREATE ROLE " + rolename + (password != null ? (encrypted ? " ENCRYPTED" : "") + " PASSWORD '" + password + "'" : ""));
+						PreparedStatement ps = connection.prepareStatement("CREATE ROLE " + rolename + (password != null ? " PASSWORD '" + password + "'" : ""));
 						ps.execute();
 						
 						if (roles != null) {
