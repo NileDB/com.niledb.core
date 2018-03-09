@@ -2,7 +2,6 @@ package security.fielddefinitions;
 
 import static graphql.Scalars.*;
 import static graphql.schema.GraphQLArgument.newArgument;
-import static graphql.schema.GraphQLEnumType.newEnum;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 import java.sql.Connection;
@@ -31,13 +30,7 @@ public class TablePrivilegeGrant {
 			.argument(newArgument()
 					.name("privileges")
 					.description("The list of privileges to grant.")
-					.type(GraphQLNonNull.nonNull(GraphQLList.list(newEnum()
-							.name("TablePrivilegeType")
-							.value("SELECT")
-							.value("INSERT")
-							.value("UPDATE")
-							.value("DELETE")
-							.build()))))
+					.type(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLTypeReference.typeRef("TablePrivilegeType")))))
 			.argument(newArgument()
 					.name("tables")
 					.description("The list of tables the privileges are granted on.")

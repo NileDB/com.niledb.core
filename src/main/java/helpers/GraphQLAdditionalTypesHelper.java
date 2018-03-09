@@ -19,6 +19,7 @@ import static graphql.Scalars.*;
 import static graphql.schema.GraphQLEnumType.newEnum;
 import static graphql.schema.GraphQLInputObjectType.newInputObject;
 import static graphql.schema.GraphQLInputObjectField.newInputObjectField;
+
 import graphql.schema.GraphQLNonNull;
 
 import java.util.HashSet;
@@ -62,6 +63,16 @@ public class GraphQLAdditionalTypesHelper {
 								.value("SWEDISH")
 								.value("TURKISH")
 								.build()))
+				.build());
+		
+		// Table privilege types
+		additionalTypes.add(newEnum()
+				.name("TablePrivilegeType")
+				.description("Table privilege types")
+				.value("SELECT")
+				.value("INSERT")
+				.value("UPDATE")
+				.value("DELETE")
 				.build());
 		
 		// Join types
