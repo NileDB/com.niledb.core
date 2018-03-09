@@ -19,6 +19,7 @@ import static graphql.Scalars.*;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLArgument.newArgument;
+import static graphql.schema.GraphQLEnumType.newEnum;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -30,6 +31,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -48,6 +50,7 @@ import graphql.GraphQLError;
 import graphql.language.Field;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
@@ -116,7 +119,7 @@ public class GraphQLHandler {
 			.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 			.setSerializationInclusion(Include.NON_NULL);
 	
-	public static void refreshSchema() {
+	public static synchronized void refreshSchema() {
 		
 		logger.info("Reloading GraphQL schema from database...");
 		
@@ -154,7 +157,7 @@ public class GraphQLHandler {
 		GraphQLObjectType.Builder queryBuilder = newObject()
 				.name("Query")
 				.description("Query operations. They do not make changes to the system.");
-				
+		
 		// Get Schemas
 		HashSet<GraphQLType> additionalTypes = new HashSet<GraphQLType>();
 		
@@ -177,8 +180,6 @@ public class GraphQLHandler {
 		// Several additional types
 		logger.info("Adding additional types...");
 		additionalTypes.addAll(GraphQLAdditionalTypesHelper.getAuxiliaryTypes());
-		
-		schemaBuilder.additionalTypes(additionalTypes);
 		
 		// Get Entities
 		logger.info("Adding entities...");
@@ -508,7 +509,6 @@ public class GraphQLHandler {
 			mutationBuilder.field(RoleGrant.builder);
 			mutationBuilder.field(RoleRevoke.builder);
 			
-			
 			mutationBuilder.field(TablePrivilegeGrant.builder);
 			mutationBuilder.field(TablePrivilegeRevoke.builder);
 			
@@ -523,9 +523,26 @@ public class GraphQLHandler {
 			mutationBuilder.field(PolicyUpdate.builder);
 		}
 		
+		// EntityEnumType
+		GraphQLEnumType.Builder entityEnumType = newEnum()
+				.name("EntityEnumType")
+				.description("List of entity names");
+		for (String entityName : SchemaMap.entities.keySet()) {
+			String underscoredName = entityName.replaceAll("\\.", "_");
+			entityEnumType.value(underscoredName);
+			String fullName = "";
+			StringTokenizer st = new StringTokenizer(entityName, ".");
+			while (st.hasMoreTokens()) {
+				fullName += "\"" + st.nextToken() + "\".";
+			}
+			SchemaMap.entityNameByUnderscoredName.put(underscoredName, fullName.substring(0, fullName.length() - 1));
+		}
+		additionalTypes.add(entityEnumType.build());
+		
 		// Build GraphQL schema
 		schemaBuilder.query(queryBuilder);
 		schemaBuilder.mutation(mutationBuilder);
+		schemaBuilder.additionalTypes(additionalTypes);
 		
 		GraphQLSchema schema = schemaBuilder.build();
 		
@@ -533,7 +550,7 @@ public class GraphQLHandler {
 		logger.info("New GraphQL schema loaded successfully.");
 	}
 	
-	public static GraphQL getGraphQL() {
+	public static synchronized GraphQL getGraphQL() {
 		if (graphql == null) {
 			refreshSchema();
 		}
