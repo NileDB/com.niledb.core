@@ -15,8 +15,10 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLNonNull;
+import helpers.ConfigHelper;
 import helpers.DatabaseHelper;
 import helpers.Helper;
+import io.vertx.core.json.JsonArray;
 
 public class RoleDelete {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
@@ -49,16 +51,58 @@ public class RoleDelete {
 							throw new Exception("Incorrect role name. Please, use this format: [_a-zA-Z][_0-9a-zA-Z]*");
 						}
 						connection = DatabaseHelper.getConnection((String) ((Map<String, Object>) environment.getContext()).get("authorization"));
-						PreparedStatement ps = connection.prepareStatement("DROP ROLE " + rolename);
+						connection.setAutoCommit(false);
+						
+						PreparedStatement ps = null;
+						StringBuffer sb = null;
+						
+						List<String> schemas = ((JsonArray) ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAMES, null)).getList();
+						if (schemas != null) {
+							sb = new StringBuffer("REVOKE USAGE ON ALL SEQUENCES IN SCHEMA ");
+							for (int i = 0; i < schemas.size(); i++) {
+								sb.append((i > 0 ? ", " : "") + schemas.get(i));
+							}
+							sb.append(" FROM " + rolename);
+							ps = connection.prepareStatement(sb.toString());
+							ps.execute();
+							
+							sb = new StringBuffer("REVOKE ALL ON ALL TABLES IN SCHEMA ");
+							for (int i = 0; i < schemas.size(); i++) {
+								sb.append((i > 0 ? ", " : "") + schemas.get(i));
+							}
+							sb.append(" FROM " + rolename);
+							ps = connection.prepareStatement(sb.toString());
+							ps.execute();
+							
+							sb = new StringBuffer("REVOKE USAGE ON SCHEMA ");
+							for (int i = 0; i < schemas.size(); i++) {
+								sb.append((i > 0 ? ", " : "") + schemas.get(i));
+							}
+							sb.append(" FROM " + rolename);
+							ps = connection.prepareStatement(sb.toString());
+							ps.execute();
+						}
+						
+						ps = connection.prepareStatement("DROP ROLE " + rolename);
 						ps.execute();
 					}
 					catch (Exception e) {
 						e.printStackTrace();
+						if (connection != null) {
+							try {
+								connection.rollback();
+							}
+							catch (Exception e2) {
+								e2.printStackTrace();
+								throw new RuntimeException(e2.getMessage());
+							}
+						}
 						throw new RuntimeException(e.getMessage());
 					}
 					finally {
 						try {
 							if (connection != null) {
+								connection.commit();
 								connection.close();
 							}
 						}

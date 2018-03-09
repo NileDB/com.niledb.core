@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import graphql.language.Argument;
 import graphql.language.Field;
@@ -48,6 +49,7 @@ public class TablePrivilegeGrant {
 					Connection connection = null;
 					try {
 						List<String> privileges = null;
+						List<String> schemas = null;
 						List<String> tables = null;
 						List<String> roles = null;
 						Field field = fields.get(0);
@@ -66,12 +68,16 @@ public class TablePrivilegeGrant {
 								List<Value> values = (List<Value>) Helper.resolveValue(argument.getValue(), environment);
 								if (values.size() > 0) {
 									tables = new ArrayList<String>();
+									schemas = new ArrayList<String>();
 									for (int j = 0; j < values.size(); j++) {
 										String table = (String) Helper.resolveValue(values.get(j), environment);
 										if (!table.matches("[_a-zA-Z][_0-9a-zA-Z]*")) {
 											throw new Exception("Incorrect table name. Please, use this format: [_a-zA-Z][_0-9a-zA-Z]*");
 										}
-										tables.add(SchemaMap.entityNameByUnderscoredName.get(table));
+										String tableName = SchemaMap.entityNameByUnderscoredName.get(table);
+										tables.add(tableName);
+										StringTokenizer st = new StringTokenizer(tableName, "\\.");
+										schemas.add(st.nextToken());
 									}
 								}
 							}
@@ -92,6 +98,7 @@ public class TablePrivilegeGrant {
 						
 						// PreparedStatement now allowed, so check to avoid SQL injection
 						connection = DatabaseHelper.getConnection((String) ((Map<String, Object>) environment.getContext()).get("authorization"));
+						connection.setAutoCommit(false);
 						StringBuffer sb = new StringBuffer("GRANT ");
 						for (int i = 0; i < privileges.size(); i++) {
 							sb.append((i > 0 ? ", " : "") + privileges.get(i));
@@ -107,14 +114,46 @@ public class TablePrivilegeGrant {
 						
 						PreparedStatement ps = connection.prepareStatement(sb.toString());
 						ps.execute();
+						
+						sb = new StringBuffer("GRANT USAGE ON SCHEMA ");
+						for (int i = 0; i < schemas.size(); i++) {
+							sb.append((i > 0 ? ", " : "") + schemas.get(i));
+						}
+						sb.append(" TO ");
+						for (int i = 0; i < roles.size(); i++) {
+							sb.append((i > 0 ? ", " : "") + roles.get(i));
+						}
+						ps = connection.prepareStatement(sb.toString());
+						ps.execute();
+						
+						sb = new StringBuffer("GRANT USAGE ON ALL SEQUENCES IN SCHEMA ");
+						for (int i = 0; i < schemas.size(); i++) {
+							sb.append((i > 0 ? ", " : "") + schemas.get(i));
+						}
+						sb.append(" TO ");
+						for (int i = 0; i < roles.size(); i++) {
+							sb.append((i > 0 ? ", " : "") + roles.get(i));
+						}
+						ps = connection.prepareStatement(sb.toString());
+						ps.execute();
 					}
 					catch (Exception e) {
 						e.printStackTrace();
+						if (connection != null) {
+							try {
+								connection.rollback();
+							}
+							catch (Exception e2) {
+								e2.printStackTrace();
+								throw new RuntimeException(e2.getMessage());
+							}
+						}
 						throw new RuntimeException(e.getMessage());
 					}
 					finally {
 						try {
 							if (connection != null) {
+								connection.commit();
 								connection.close();
 							}
 						}
