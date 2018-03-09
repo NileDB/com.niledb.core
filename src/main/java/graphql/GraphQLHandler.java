@@ -75,10 +75,12 @@ import security.fielddefinitions.PolicyCreate;
 import security.fielddefinitions.PolicyDelete;
 import security.fielddefinitions.PolicyList;
 import security.fielddefinitions.PolicyUpdate;
+import security.fielddefinitions.RoleChangePassword;
 import security.fielddefinitions.RoleCreate;
 import security.fielddefinitions.RoleDelete;
+import security.fielddefinitions.RoleGrant;
 import security.fielddefinitions.RoleList;
-import security.fielddefinitions.RoleUpdate;
+import security.fielddefinitions.RoleRevoke;
 import security.fielddefinitions.SecurityEnabled;
 import security.fielddefinitions.TablePrivilegeGrant;
 import security.fielddefinitions.TablePrivilegeList;
@@ -502,7 +504,10 @@ public class GraphQLHandler {
 			
 			mutationBuilder.field(RoleCreate.builder);
 			mutationBuilder.field(RoleDelete.builder);
-			mutationBuilder.field(RoleUpdate.builder);
+			mutationBuilder.field(RoleChangePassword.builder);
+			mutationBuilder.field(RoleGrant.builder);
+			mutationBuilder.field(RoleRevoke.builder);
+			
 			
 			mutationBuilder.field(TablePrivilegeGrant.builder);
 			mutationBuilder.field(TablePrivilegeRevoke.builder);

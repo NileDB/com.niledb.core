@@ -33,7 +33,7 @@ import io.vertx.core.json.JsonObject;
 public class TablePrivilegeGrant {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
 			.name("__TablePrivilegeGrant")
-			.description("It logins as a user into the system and returns a token that must be used in \"authorization\" variable when invoking GraphQL services.")
+			.description("It grants an access privilege to a table.")
 			.argument(newArgument()
 					.name("username")
 					.description("The username.")

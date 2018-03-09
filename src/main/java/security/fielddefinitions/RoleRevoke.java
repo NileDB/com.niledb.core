@@ -6,43 +6,40 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import graphql.language.Argument;
 import graphql.language.Field;
-import graphql.language.Value;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import helpers.DatabaseHelper;
 import helpers.Helper;
 
-public class RoleUpdate {
+public class RoleRevoke {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__roleUpdate")
-			.description("It updates a new role. The role can be both, a user (with password) or a group.")
+			.name("__roleRevoke")
+			.description("It revokes a role (the revoked role) from another existing role.")
 			.argument(newArgument()
 					.name("rolename")
-					.description("The role name.")
+					.description("The role name to which the revoked role is revoked.")
 					.type(GraphQLNonNull.nonNull(GraphQLString)))
 			.argument(newArgument()
-					.name("password")
-					.description("The password.")
+					.name("revokedRole")
+					.description("The revoked role.")
 					.type(GraphQLNonNull.nonNull(GraphQLString)))
 			.type(GraphQLString)
 			.dataFetcher(new DataFetcher<String>() {
-				@SuppressWarnings({ "unchecked", "rawtypes" })
+				@SuppressWarnings("unchecked")
 				@Override
 				public String get(DataFetchingEnvironment environment) {
 					List<Field> fields = environment.getFields();
 					Connection connection = null;
 					try {
 						String rolename = null;
-						String password = null;
+						String revokedRole = null;
 						
 						Field field = fields.get(0);
 						for (int i = 0; i < field.getArguments().size(); i++) {
@@ -50,8 +47,8 @@ public class RoleUpdate {
 							if (argument.getName().equals("rolename")) {
 								rolename = (String) Helper.resolveValue(argument.getValue(), environment);
 							}
-							else if (argument.getName().equals("password")) {
-								password = (String) Helper.resolveValue(argument.getValue(), environment);
+							else if (argument.getName().equals("revokedRole")) {
+								revokedRole = (String) Helper.resolveValue(argument.getValue(), environment);
 							}
 						}
 						
@@ -59,11 +56,11 @@ public class RoleUpdate {
 						if (!rolename.matches("[_a-zA-Z][_0-9a-zA-Z]*")) {
 							throw new Exception("Incorrect role name. Please, use this format: [_a-zA-Z][_0-9a-zA-Z]*");
 						}
-						if (!password.matches("[^']+")) {
-							throw new Exception("Incorrect password. Please, don't use single quote.");
+						if (!revokedRole.matches("[_a-zA-Z][_0-9a-zA-Z]*")) {
+							throw new Exception("Incorrect revoked role name. Please, use this format: [_a-zA-Z][_0-9a-zA-Z]*");
 						}
 						connection = DatabaseHelper.getConnection((String) ((Map<String, Object>) environment.getContext()).get("authorization"));
-						PreparedStatement ps = connection.prepareStatement("ALTER ROLE " + rolename + (password != null ? " PASSWORD '" + password + "'" : ""));
+						PreparedStatement ps = connection.prepareStatement("REVOKE " + revokedRole + " FROM " + rolename);
 						ps.execute();
 					}
 					catch (Exception e) {
