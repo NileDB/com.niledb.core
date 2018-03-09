@@ -51,7 +51,7 @@ public class Helper {
 					boolean verified = jwsObject.verify(verifier);
 					
 					if (verified) {
-						return new JsonObject(jwsObject.getPayload().toString()).getString("rolename");
+						return new JsonObject(jwsObject.getPayload().toString()).getString("username");
 					}
 					else {
 						return null;
