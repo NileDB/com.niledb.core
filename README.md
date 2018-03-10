@@ -251,6 +251,7 @@ This product uses and is based on the following:
 * [Apache Commons](https://commons.apache.org/)
 * [OpenJDK](http://openjdk.java.net/)
 * [Docker](https://www.docker.com/)
+* [Nimbus OAuth + OIDC SDK](https://connect2id.com/products/nimbus-oauth-openid-connect-sdk/)
 
 ### License
 
