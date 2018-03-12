@@ -328,6 +328,13 @@ public class GraphQLHandler {
 								System.out.println(result.encodePrettily());
 								rs.close();
 								
+								// Chaining return values to input values
+								Map<String, Object> context = (Map<String, Object>) environment.getContext();
+								for (String fieldName: result.fieldNames()) {
+									context.put(fieldName, result.getValue(fieldName));
+									
+								}
+								
 								return result;
 							}
 							catch (Exception e) {
