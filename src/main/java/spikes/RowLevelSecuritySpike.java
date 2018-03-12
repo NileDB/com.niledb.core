@@ -53,9 +53,12 @@ public class RowLevelSecuritySpike {
 		/*
 		statement.execute("CREATE ROLE customer");
 		connection.commit();
+		*/
 		
+		/*
 		for (int i = 0; i < NUMBER_OF_USERS; i++) {
-			statement.execute("CREATE ROLE user" + i);
+			statement.execute("DROP ROLE user" + i);
+			statement.execute("CREATE ROLE user" + i + " PASSWORD 'user" + i + "'");
 			statement.execute("GRANT customer TO user" + i);
 			
 			if (i % 1000 == 0) {
@@ -65,9 +68,8 @@ public class RowLevelSecuritySpike {
 		}
 		System.out.println("Users: " + NUMBER_OF_USERS);
 		connection.commit();
-		
 		*/
-
+		
 		/*
 		statement.execute("DROP TABLE IF EXISTS \"order_line\"");
 		statement.execute("DROP TABLE IF EXISTS \"order\"");

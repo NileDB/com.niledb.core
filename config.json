@@ -13,8 +13,8 @@
 	"service.redirectFromPort": 8080,
 	"service.redirectUrl": "https://localhost:8443",
 	
-	"db.name": "nile",
-	"db.schema.names": ["a", "b"],
+	"db.name": "test_rls",
+	"db.schema.names": ["public"],
 	"db.host": "localhost",
 	"db.port": 5432,
 	
