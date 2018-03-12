@@ -68,25 +68,20 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import security.fielddefinitions.ColumnPrivilegeGrant;
-import security.fielddefinitions.ColumnPrivilegeList;
 import security.fielddefinitions.ColumnPrivilegeRevoke;
 import security.fielddefinitions.CurrentUser;
 import security.fielddefinitions.DisableRowLevelSecurity;
 import security.fielddefinitions.EnableRowLevelSecurity;
+import security.fielddefinitions.FilterByCurrentUserCreate;
+import security.fielddefinitions.FilterByCurrentUserDelete;
 import security.fielddefinitions.Login;
-import security.fielddefinitions.PolicyCreate;
-import security.fielddefinitions.PolicyDelete;
-import security.fielddefinitions.PolicyList;
-import security.fielddefinitions.PolicyUpdate;
 import security.fielddefinitions.RoleChangePassword;
 import security.fielddefinitions.RoleCreate;
 import security.fielddefinitions.RoleDelete;
 import security.fielddefinitions.RoleGrant;
-import security.fielddefinitions.RoleList;
 import security.fielddefinitions.RoleRevoke;
 import security.fielddefinitions.SecurityEnabled;
 import security.fielddefinitions.TablePrivilegeGrant;
-import security.fielddefinitions.TablePrivilegeList;
 import security.fielddefinitions.TablePrivilegeRevoke;
 import helpers.ConfigHelper;
 import helpers.DatabaseHelper;
@@ -503,10 +498,13 @@ public class GraphQLHandler {
 		queryBuilder.field(SecurityEnabled.builder);
 		if ((Boolean) ConfigHelper.get(ConfigHelper.SECURITY_ENABLED, false)) {
 			queryBuilder.field(CurrentUser.builder);
+
+			/*
 			queryBuilder.field(RoleList.builder);
 			queryBuilder.field(TablePrivilegeList.builder);
 			queryBuilder.field(ColumnPrivilegeList.builder);
 			queryBuilder.field(PolicyList.builder);
+			*/
 			
 			mutationBuilder.field(Login.builder);
 			
@@ -525,9 +523,8 @@ public class GraphQLHandler {
 			mutationBuilder.field(DisableRowLevelSecurity.builder);
 			mutationBuilder.field(EnableRowLevelSecurity.builder);
 			
-			mutationBuilder.field(PolicyCreate.builder);
-			mutationBuilder.field(PolicyDelete.builder);
-			mutationBuilder.field(PolicyUpdate.builder);
+			mutationBuilder.field(FilterByCurrentUserCreate.builder);
+			mutationBuilder.field(FilterByCurrentUserDelete.builder);
 		}
 		
 		// EntityEnumType
