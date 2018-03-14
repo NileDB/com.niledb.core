@@ -70,7 +70,7 @@ public class DatabaseHelper {
 		else {
 			try {
 				HikariConfig config = new HikariConfig();
-
+				
 				JsonArray schemaNames = (JsonArray) ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAMES, new JsonArray().add("public"));
 				
 				config.setJdbcUrl("jdbc:postgresql://"

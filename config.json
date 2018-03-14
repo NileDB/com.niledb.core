@@ -13,7 +13,7 @@
 	"service.redirectFromPort": 8080,
 	"service.redirectUrl": "https://localhost:8443",
 	
-	"db.name": "test_rls",
+	"db.name": "ordertracking",
 	"db.schema.names": ["public"],
 	"db.host": "localhost",
 	"db.port": 5432,

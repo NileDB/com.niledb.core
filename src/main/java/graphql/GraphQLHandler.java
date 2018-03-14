@@ -131,6 +131,7 @@ public class GraphQLHandler {
 		GraphQLSchema.Builder schemaBuilder = GraphQLSchema.newSchema();
 		SchemaMap.entities = new HashMap<String, EntityMap>();
 		SchemaMap.customTypes = new HashMap<String, CustomTypeMap>();
+		SchemaMap.entityNameByUnderscoredName = new HashMap<String, String>();
 		
 		// Define the GraphQL object type for the mutation
 		GraphQLObjectType.Builder mutationBuilder = newObject()
