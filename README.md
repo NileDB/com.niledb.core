@@ -9,10 +9,12 @@ NileDB Core dynamically generates a GraphQL API on top of your PostgreSQL databa
 You can see NileDB Core's features in the following videos:
 
 * Part I - Data Management
-[![Data Management features](video-link.png)](https://youtu.be/lEJWVSTbRhk)
+
+[![Data Management features](video-link-1.png)](https://youtu.be/lEJWVSTbRhk)
 
 * Part II - Security Management
-[![Security Management features](video-link.png)](https://youtu.be/DmsgJ8Y7Uvk)
+
+[![Security Management features](video-link-2.png)](https://youtu.be/DmsgJ8Y7Uvk)
 
 ### Quick Start
 
