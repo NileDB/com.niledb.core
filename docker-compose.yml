@@ -27,3 +27,13 @@ services:
       - 80:80
     restart: always
 
+  nifi:
+    container_name: nifi
+    depends_on:
+      - niledb
+    image: apache/nifi:latest
+    links:
+      - niledb
+    ports:
+      - 8080:8080
+    restart: always
