@@ -52,6 +52,8 @@ public class ConfigHelper {
 	public final static String MODEL_PATH = "model.path";
 	public final static String MODEL_CREATE_MODEL_FROM_DB = "model.createModelFromDb";
 	public final static String MODEL_CREATE_DB_FROM_MODEL = "model.createDbFromModel";
+	public final static String MQTT_ENABLED = "mqtt.enabled";
+	public final static String MQTT_PORT = "mqtt.port";
 	
 	private static JsonObject config;
 	

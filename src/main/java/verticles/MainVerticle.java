@@ -44,6 +44,7 @@ public class MainVerticle extends AbstractVerticle {
 		// Set configuration values from external configuration (config.json)
 		ConfigHelper.setConfig(config());
 		
+		// HTTP Server
 		vertx.deployVerticle(HttpVerticle.class,
 				new DeploymentOptions()
 						.setWorker(true)
@@ -68,6 +69,19 @@ public class MainVerticle extends AbstractVerticle {
 						}
 					}
 				});
+		
+		// MQTT Server
+		if ((Boolean) ConfigHelper.get(ConfigHelper.MQTT_ENABLED, false)) {
+			
+			vertx.deployVerticle(MqttVerticle.class,
+					new DeploymentOptions()
+							.setWorker(false)
+							.setInstances(4)
+							.setConfig(config()),
+					result -> {
+						logger.info("Deployed MqttVerticle.");
+					});
+		}
 	}
 	
 	public static void main(String[] args) throws Exception {

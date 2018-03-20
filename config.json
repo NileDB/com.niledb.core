@@ -30,5 +30,8 @@
 	
 	"model.path": "model.xmi",
 	"model.createModelFromDb": true,
-	"model.createDbFromModel": true
+	"model.createDbFromModel": true,
+	
+	"mqtt.enabled": true,
+	"mqtt.port": 8883
 }

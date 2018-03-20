@@ -35,12 +35,14 @@ def doOnChange = './gradlew classes'
 dependencies {
 	compile "io.vertx:vertx-core:$vertxVersion"
 	compile "io.vertx:vertx-web:$vertxVersion"
+	compile "io.vertx:vertx-mqtt:$vertxVersion"
 	compile "com.graphql-java:graphql-java:7.0"
 	compile "commons-io:commons-io:2.6"
 	compile "org.postgresql:postgresql:42.2.1"
 	compile "org.apache.commons:commons-lang3:3.7"
 	compile "com.zaxxer:HikariCP:2.7.8"
 	compile "com.nimbusds:oauth2-oidc-sdk:5.56"
+	compile "org.jblas:jblas:1.2.4"
 	
 	testCompile "junit:junit:4.12"
 	testCompile "io.vertx:vertx-unit:$vertxVersion"

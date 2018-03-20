@@ -129,6 +129,7 @@ public class GraphQLHandler {
 				schemaNames);
 		
 		GraphQLSchema.Builder schemaBuilder = GraphQLSchema.newSchema();
+		SchemaMap.database = database;
 		SchemaMap.entities = new HashMap<String, EntityMap>();
 		SchemaMap.customTypes = new HashMap<String, CustomTypeMap>();
 		SchemaMap.entityNameByUnderscoredName = new HashMap<String, String>();
@@ -199,6 +200,7 @@ public class GraphQLHandler {
 			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityWhereGraphqlObjectType(database, entity, multiSchema));
 			
 			EntityMap entityMap = new EntityMap();
+			entityMap.entity = entity;
 			entityMap.attributes = new HashMap<String, EntityAttribute>();
 			entityMap.directReferences = new HashMap<String, EntityReference>();
 			entityMap.inverseReferences = new HashMap<String, EntityReference>();

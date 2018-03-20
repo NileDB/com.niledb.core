@@ -18,6 +18,7 @@ package helpers.maps;
 import java.util.HashMap;
 import java.util.Map;
 
+import data.Entity;
 import data.EntityAttribute;
 import data.EntityReference;
 
@@ -25,6 +26,7 @@ import data.EntityReference;
  * @author NileDB, Inc.
  */
 public class EntityMap {
+	public Entity entity = null;
 	public Map<String, EntityAttribute> attributes = new HashMap<String, EntityAttribute>();
 	public Map<String, EntityReference> directReferences = new HashMap<String, EntityReference>();
 	public Map<String, EntityReference> inverseReferences = new HashMap<String, EntityReference>();

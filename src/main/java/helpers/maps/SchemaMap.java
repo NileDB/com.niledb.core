@@ -18,10 +18,13 @@ package helpers.maps;
 import java.util.HashMap;
 import java.util.Map;
 
+import data.Database;
+
 /**
  * @author NileDB, Inc.
  */
 public class SchemaMap {
+	public static Database database = null;
 	public static Map<String, EntityMap> entities = new HashMap<String, EntityMap>();
 	public static Map<String, String> entityNameByUnderscoredName = new HashMap<String, String>();
 	public static Map<String, CustomTypeMap> customTypes = new HashMap<String, CustomTypeMap>();
