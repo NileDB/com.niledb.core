@@ -25,6 +25,7 @@ services:
       - db
     ports:
       - 80:80
+      - 1883:1883
     restart: always
 
   nifi:

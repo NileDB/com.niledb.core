@@ -24,6 +24,13 @@
 	"db.username": "postgres",
 	"db.password": "postgres",
 	
+	"security.enabled": false,
+	"security.anonymous.rolename": "anonymous",
+	"security.jwt.secret": "password_of_at_least_32_characters",
+
+	"mqtt.enabled": true,
+	"mqtt.port": 1883,
+	
 	"model.path": "model.xmi",
 	"model.createModelFromDb": true,
 	"model.createDbFromModel": true

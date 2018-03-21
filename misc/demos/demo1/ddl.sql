@@ -27,7 +27,8 @@ CREATE TYPE "orderDeliveryStatus" AS ENUM (
 CREATE TABLE "address" (
 	"id" serial PRIMARY KEY,
 	"customer" int NOT NULL,
-	"fullName" text,
+	"firstName" text,
+	"lastName" text,
 	"phoneNumber" text,
 	"addressLine1" text NOT NULL,
 	"addressLine2" text,
@@ -39,16 +40,18 @@ CREATE TABLE "address" (
 
 CREATE TABLE "courier" (
 	"id" serial PRIMARY KEY,
-	"user" text NOT NULL,
-	"fullName" text NOT NULL,
+	"user" text,
+	"firstName" text NOT NULL,
+	"lastName" text NOT NULL,
 	"latitude" double precision,
 	"longitude" double precision
 );
 
 CREATE TABLE "customer" (
 	"id" serial PRIMARY KEY,
-	"user" text NOT NULL,
-	"fullName" text NOT NULL,
+	"user" text,
+	"firstName" text NOT NULL,
+	"lastName" text NOT NULL,
 	"email" text NOT NULL
 );
 
