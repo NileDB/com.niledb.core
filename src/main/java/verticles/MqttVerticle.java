@@ -153,6 +153,9 @@ public class MqttVerticle extends AbstractVerticle {
 			endpoint.publishHandler(message -> {
 				String payload = message.payload().toString(Charset.defaultCharset());
 				String topicName = message.topicName();
+
+				// If payload has quotes (it comes from NIFI JSON or similar), remove them
+				payload = payload.replaceAll("\"(\\w+)\"\\s*:", "$1:");
 				
 				try {
 					GraphQL graphql = GraphQLHandler.getGraphQL();

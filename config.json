@@ -1,6 +1,6 @@
 {
 	"service.host": "localhost",
-	"service.port": 8080,
+	"service.port": 9080,
 	"service.ssl": false,
 	"service.ssl.autoGenerateCert": false,
 	"service.ssl.key.path": "misc/ssl/private.pem",
@@ -13,7 +13,7 @@
 	"service.redirectFromPort": 8080,
 	"service.redirectUrl": "https://localhost:8443",
 	
-	"db.name": "ordertracking",
+	"db.name": "niledb",
 	"db.schema.names": ["public"],
 	"db.host": "localhost",
 	"db.port": 5432,
@@ -24,14 +24,14 @@
 	"db.username": "postgres",
 	"db.password": "postgres",
 	
-	"security.enabled": true,
+	"security.enabled": false,
 	"security.anonymous.rolename": "anonymous",
 	"security.jwt.secret": "password_of_at_least_32_characters",
 	
+	"mqtt.enabled": true,
+	"mqtt.port": 1883,
+	
 	"model.path": "model.xmi",
 	"model.createModelFromDb": true,
-	"model.createDbFromModel": true,
-	
-	"mqtt.enabled": true,
-	"mqtt.port": 8883
+	"model.createDbFromModel": true
 }
