@@ -6,6 +6,8 @@ Welcome to [NileDB](https://niledb.com) Core, an open-source Data Backend writte
 
 NileDB Core dynamically generates a GraphQL API on top of your PostgreSQL database to let you integrate your front-end apps with your data in an easy, quick, secure, and scalable way.
 
+![NileDB](niledb-current.png)
+
 You can see NileDB Core's features in the following videos:
 
 * Part I - Data Management
@@ -258,6 +260,7 @@ This product uses and is based on the following:
 * [GraphiQL](https://github.com/graphql/graphiql/)
 * [GraphQL Playground](https://github.com/graphcool/graphql-playground/)
 * [HikariCP](https://brettwooldridge.github.io/HikariCP/)
+* [Hazelcast IMDG](https://hazelcast.org/)
 * [Apache Commons](https://commons.apache.org/)
 * [OpenJDK](http://openjdk.java.net/)
 * [Docker](https://www.docker.com/)
