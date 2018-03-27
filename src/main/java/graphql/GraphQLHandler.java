@@ -93,6 +93,7 @@ import helpers.GraphQLSqlInsertHelper;
 import helpers.GraphQLSqlSelectHelper;
 import helpers.GraphQLSqlUpdateHelper;
 import helpers.Helper;
+import helpers.IMDGHelper;
 import helpers.SqlDeleteCommand;
 import helpers.SqlInsertCommand;
 import helpers.SqlSelectCommand;
@@ -138,6 +139,51 @@ public class GraphQLHandler {
 		GraphQLObjectType.Builder mutationBuilder = newObject()
 				.name("Mutation")
 				.description("Operations that make changes to the system.")
+				
+				.field(newFieldDefinition()
+						.name("__setData")
+						.description("It sets data into In-Memory Data Grid.")
+						.argument(newArgument()
+								.name("map")
+								.description("The map name.")
+								.type(GraphQLNonNull.nonNull(GraphQLString)))
+						.argument(newArgument()
+								.name("key")
+								.description("The key name.")
+								.type(GraphQLNonNull.nonNull(GraphQLString)))
+						.argument(newArgument()
+								.name("value")
+								.description("The value.")
+								.type(GraphQLNonNull.nonNull(GraphQLString)))
+						.type(GraphQLBoolean)
+						.dataFetcher(new DataFetcher<Boolean>() {
+							@Override
+							public Boolean get(DataFetchingEnvironment environment) {
+								IMDGHelper.get().getMap(environment.getArgument("map")).set(environment.getArgument("key"), environment.getArgument("value"));
+								return true;
+							}
+						}))
+				
+				.field(newFieldDefinition()
+						.name("__deleteData")
+						.description("It deletes data from In-Memory Data Grid.")
+						.argument(newArgument()
+								.name("map")
+								.description("The map name.")
+								.type(GraphQLNonNull.nonNull(GraphQLString)))
+						.argument(newArgument()
+								.name("key")
+								.description("The key name.")
+								.type(GraphQLNonNull.nonNull(GraphQLString)))
+						.type(GraphQLBoolean)
+						.dataFetcher(new DataFetcher<Boolean>() {
+							@Override
+							public Boolean get(DataFetchingEnvironment environment) {
+								IMDGHelper.get().getMap(environment.getArgument("map")).delete(environment.getArgument("key"));
+								return true;
+							}
+						}))
+				
 				.field(newFieldDefinition()
 						.name("__reloadSchema")
 						.description("It reloades the GraphQL schema from database.")
@@ -484,6 +530,25 @@ public class GraphQLHandler {
 						}
 					}));
 		}
+		
+		queryBuilder.field(newFieldDefinition()
+				.name("__getData")
+				.description("It gets data from In-Memory Data Grid.")
+				.argument(newArgument()
+						.name("map")
+						.description("The map name.")
+						.type(GraphQLNonNull.nonNull(GraphQLString)))
+				.argument(newArgument()
+						.name("key")
+						.description("The key name.")
+						.type(GraphQLNonNull.nonNull(GraphQLString)))
+				.type(GraphQLString)
+				.dataFetcher(new DataFetcher<String>() {
+					@Override
+					public String get(DataFetchingEnvironment environment) {
+						return (String) IMDGHelper.get().getMap(environment.getArgument("map")).get(environment.getArgument("key"));
+					}
+				}));
 		
 		queryBuilder.field(newFieldDefinition()
 				.name("__systemAverageLoad")
