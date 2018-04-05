@@ -293,7 +293,7 @@ public class GraphQLHandler {
 												.append(") AS \"list_0\"");
 								
 								PreparedStatement ps = connection.prepareStatement(sb.toString());
-								System.out.println(sb.toString());
+								logger.debug(sb.toString());
 								List<Object> parameters = sqlSelectCommand.getParameters();
 								for (int k = 0; k < parameters.size(); k++) {
 									ps.setObject(k + 1, parameters.get(k));
@@ -311,7 +311,7 @@ public class GraphQLHandler {
 								}
 								rs.close();
 								
-								System.out.println(result.encodePrettily());
+								logger.debug(result.encodePrettily());
 								
 								return result;
 							}
@@ -359,7 +359,7 @@ public class GraphQLHandler {
 								StringBuffer sb = new StringBuffer()
 												.append(sqlInsertCommand);
 								
-								System.out.println(sb.toString());
+								logger.debug(sb.toString());
 								
 								PreparedStatement ps = connection.prepareStatement(sb.toString());
 								for (int j = 0; j < sqlInsertCommand.values.size(); j++) {
@@ -369,7 +369,7 @@ public class GraphQLHandler {
 								rs.next();
 								
 								JsonObject result = new JsonArray(rs.getString("list")).getJsonObject(0);
-								System.out.println(result.encodePrettily());
+								logger.debug(result.encodePrettily());
 								rs.close();
 								
 								// Chaining return values to input values
@@ -429,7 +429,7 @@ public class GraphQLHandler {
 								StringBuffer sb = new StringBuffer()
 												.append(sqlUpdateCommand);
 								
-								System.out.println(sb.toString());
+								logger.debug(sb.toString());
 								
 								PreparedStatement ps = connection.prepareStatement(sb.toString());
 								sqlUpdateCommand.values.addAll(sqlUpdateCommand.whereParameters);
@@ -444,7 +444,7 @@ public class GraphQLHandler {
 								if (resultString != null) {
 									result = new JsonArray(resultString);
 								}
-								System.out.println(result.encodePrettily());
+								logger.debug(result.encodePrettily());
 								rs.close();
 								
 								return result;
@@ -493,7 +493,7 @@ public class GraphQLHandler {
 								StringBuffer sb = new StringBuffer()
 												.append(sqlDeleteCommand);
 								
-								System.out.println(sb.toString());
+								logger.debug(sb.toString());
 								
 								PreparedStatement ps = connection.prepareStatement(sb.toString());
 								for (int j = 0; j < sqlDeleteCommand.whereParameters.size(); j++) {
@@ -507,7 +507,7 @@ public class GraphQLHandler {
 								if (resultString != null) {
 									result = new JsonArray(resultString);
 								}
-								System.out.println(result.encodePrettily());
+								logger.debug(result.encodePrettily());
 								rs.close();
 								
 								return result;

@@ -67,7 +67,6 @@ public class Login {
 						MessageDigest messageDigest = MessageDigest.getInstance("MD5");
 						messageDigest.update((password + username).getBytes());
 						password = "md5" + DatatypeConverter.printHexBinary(messageDigest.digest()).toLowerCase();
-						System.out.println(password);
 						connection = DatabaseHelper.getConnection();
 						StringBuffer sql = new StringBuffer()
 								.append("SELECT rolname ")

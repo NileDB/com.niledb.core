@@ -295,7 +295,6 @@ public class GraphQLSqlWhereHelper {
 			}
 			
 			ObjectField field = fields.get(i);
-			System.out.println(field.getName());
 			
 			String fieldName = field.getName();
 			

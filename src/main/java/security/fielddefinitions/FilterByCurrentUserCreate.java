@@ -100,7 +100,6 @@ public class FilterByCurrentUserCreate {
 						
 						String expression = prefix + suffix;
 						String sql = "CREATE POLICY filter_by_user_" + rolename + " ON " + table + " FOR ALL TO " + rolename + " USING (" + expression + ") WITH CHECK (" + expression + ")";
-						System.out.println(sql);
 						PreparedStatement ps = connection.prepareStatement(sql);
 						ps.execute();
 					}

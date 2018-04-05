@@ -212,7 +212,6 @@ public class GraphQLSqlSelectHelper {
 								+ entity.getName() + "_" + level + "\".\""
 								+ key + "\"";
 						sqlCommand.addedGroupByAttributes.put(key, true);
-						System.out.println("Added: " + key);
 					}
 				}
 			}
@@ -228,7 +227,6 @@ public class GraphQLSqlSelectHelper {
 						sqlCommand.groupBy += (sqlCommand.groupBy.equals("") ? " GROUP BY " : ", ") + "\""
 								+ key + "\"";
 						sqlCommand.addedGroupByAttributes.put(key, true);
-						System.out.println("Added: " + key);
 					}
 				}
 			}

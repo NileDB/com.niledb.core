@@ -543,7 +543,7 @@ public class DatabaseHelper {
 								.append(attribute.getName() + " ")
 								.append(attribute.getCustomType().getName())
 								.append(attribute.isArray() ? "[]" : "");
-						System.out.println(sb.toString());
+						logger.debug(sb.toString());
 						connection.prepareStatement(sb.toString()).execute();
 					}
 				}
@@ -582,7 +582,7 @@ public class DatabaseHelper {
 					}
 				}
 				sb.append(")");
-				System.out.println(sb.toString());
+				logger.debug(sb.toString());
 				connection.prepareStatement(sb.toString()).execute();
 			}
 			
@@ -621,7 +621,7 @@ public class DatabaseHelper {
 						}
 						sb.append(")");
 					}
-					System.out.println(sb.toString());
+					logger.debug(sb.toString());
 					connection.prepareStatement(sb.toString()).execute();
 				}
 			}
@@ -662,7 +662,7 @@ public class DatabaseHelper {
 								+ attribute.getName()); 
 					}
 					sb.append(") DEFERRABLE");
-					System.out.println(sb.toString());
+					logger.debug(sb.toString());
 					connection.prepareStatement(sb.toString()).execute();
 				}
 			}
@@ -745,7 +745,7 @@ public class DatabaseHelper {
 				break;
 			}
 		}
-		System.out.println(database);
+		logger.debug(database);
 		*/
 	}
 }
