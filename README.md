@@ -266,6 +266,8 @@ This product uses and is based on the following:
 * [Docker](https://www.docker.com/)
 * [Nimbus OAuth + OIDC SDK](https://connect2id.com/products/nimbus-oauth-openid-connect-sdk/)
 
+[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Get%20NileDB,%20the%20open-source%20Data%20Backend!&url=https://niledb.com)
+
 ### License
 
 NileDB Core is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE.txt) for details.
