@@ -46,8 +46,10 @@ public class HttpVerticle extends AbstractVerticle {
 	
 	@Override
 	public void start() throws Exception {
+
+		HttpServerOptions options = new HttpServerOptions()
+				.setCompressionSupported(true);
 		
-		HttpServer server = null;
 		if ((Boolean) ConfigHelper.get(ConfigHelper.SERVICE_SSL, false)) {
 			PemKeyCertOptions pemOptions = new PemKeyCertOptions();
 			
@@ -63,15 +65,11 @@ public class HttpVerticle extends AbstractVerticle {
 					.setCertPath((String) ConfigHelper.get(ConfigHelper.SERVICE_SSL_CERT_PATH, "public.crt"));
 			}
 			
-			HttpServerOptions options = new HttpServerOptions()
+			options
 					.setPemKeyCertOptions(pemOptions)
 					.setSsl(true);
-			
-			server = vertx.createHttpServer(options);
 		}
-		else {
-			server = vertx.createHttpServer();
-		}
+		HttpServer server = vertx.createHttpServer(options);
 		
 		Router router = Router.router(vertx);
 		router.route().handler(BodyHandler.create());
@@ -163,7 +161,9 @@ public class HttpVerticle extends AbstractVerticle {
 		
 		router.route("/*").handler(StaticHandler.create()
 				.setAllowRootFileSystemAccess(false)
-				.setCachingEnabled(false)
+				.setCachingEnabled(true)
+				.setMaxAgeSeconds(60 * 60 * 24 * 30)
+				.setSendVaryHeader(true)
 				.setDefaultContentEncoding("UTF-8")
 				.setDirectoryListing(false)
 				.setFilesReadOnly(true)
