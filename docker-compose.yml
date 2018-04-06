@@ -10,6 +10,8 @@ services:
     #image: timescale/timescaledb:latest-pg10
     image: timescale/timescaledb-postgis:latest-pg10
     restart: always
+    ports:
+      - 5433:5432
 
   core:
     build:
