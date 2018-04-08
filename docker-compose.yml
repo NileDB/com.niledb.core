@@ -40,3 +40,16 @@ services:
     ports:
       - 8080:8080
     restart: always
+
+  pgweb:
+    container_name: pgweb
+    depends_on:
+      - db
+    image: sosedoff/pgweb
+    links:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/niledb?sslmode=disable
+    ports:
+      - 8081:8081
+    restart: always
