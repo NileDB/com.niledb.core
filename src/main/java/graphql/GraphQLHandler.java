@@ -260,7 +260,7 @@ public class GraphQLHandler {
 					.argument(newArgument()
 							.name("where")
 							.description("Search criteria.")
-							.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType")))
+							.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "EntityWhereType")))
 					.argument(newArgument()
 							.name("orderBy")
 							.description("Sorting criteria.")
@@ -411,7 +411,7 @@ public class GraphQLHandler {
 					.argument(newArgument()
 							.name("where")
 							.description("Search criteria for selecting the entities that must be updated.")
-							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType"))))
+							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "EntityWhereType"))))
 					.dataFetcher(new DataFetcher<Object>() {
 						@SuppressWarnings("unchecked")
 						@Override
@@ -475,7 +475,7 @@ public class GraphQLHandler {
 					.argument(newArgument()
 							.name("where")
 							.description("Search criteria for selecting the entities that must be deleted.")
-							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType"))))
+							.type(GraphQLNonNull.nonNull(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "EntityWhereType"))))
 					.dataFetcher(new DataFetcher<Object>() {
 						@SuppressWarnings("unchecked")
 						@Override

@@ -309,7 +309,7 @@ public class GraphQLQuerySchemaHelper {
 					.argument(newArgument()
 							.name("where")
 							.description("Search criteria.")
-							.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(((Entity) reference.getReferencedKey().eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) reference.getReferencedKey().eContainer()).getName()) + "WhereType")))
+							.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(((Entity) reference.getReferencedKey().eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) reference.getReferencedKey().eContainer()).getName()) + "EntityWhereType")))
 					.name(referenceName)
 					.description("Referenced entity of type " + (multiSchema ? Helper.toFirstUpper(((Entity) reference.getReferencedKey().eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) reference.getReferencedKey().eContainer()).getName()))
 					.dataFetcher(new DataFetcher<Object>() {
@@ -347,7 +347,7 @@ public class GraphQLQuerySchemaHelper {
 							.argument(newArgument()
 									.name("where")
 									.description("Search criteria.")
-									.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(referencingEntity.getSchema()) + "_" : "") + Helper.toFirstUpper(referencingEntity.getName()) + "WhereType")))
+									.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(referencingEntity.getSchema()) + "_" : "") + Helper.toFirstUpper(referencingEntity.getName()) + "EntityWhereType")))
 							.argument(newArgument()
 									.name("orderBy")
 									.description("Sorting criteria.")
@@ -391,7 +391,7 @@ public class GraphQLQuerySchemaHelper {
 				case EntityAttributeType.TEXT_VALUE:
 				case EntityAttributeType.VARCHAR_VALUE:
 					graphqlObjectType = newInputObject()
-							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "WhereType")
+							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "FieldWhereType")
 							.description("Condition that the attribute must meet.");
 					
 					if (attribute.getEnumType() == null
@@ -452,7 +452,7 @@ public class GraphQLQuerySchemaHelper {
 				case EntityAttributeType.TIMESTAMP_WITH_TIME_ZONE_VALUE:
 				case EntityAttributeType.TIME_WITH_TIME_ZONE_VALUE:
 					graphqlObjectType = newInputObject()
-							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "WhereType")
+							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "FieldWhereType")
 							.description("Condition that the attribute must meet.")
 							.field(newInputObjectField()
 									.name("EQ")
@@ -490,7 +490,7 @@ public class GraphQLQuerySchemaHelper {
 					
 				case EntityAttributeType.MONEY_VALUE:
 					graphqlObjectType = newInputObject()
-							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "WhereType")
+							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "FieldWhereType")
 							.description("Condition that the attribute must meet.")
 							.field(newInputObjectField()
 									.name("EQ")
@@ -528,7 +528,7 @@ public class GraphQLQuerySchemaHelper {
 					
 				case EntityAttributeType.BOOLEAN_VALUE:
 					graphqlObjectType = newInputObject()
-							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "WhereType")
+							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "FieldWhereType")
 							.description("Condition that the attribute must meet.")
 							.field(newInputObjectField()
 									.name("EQ")
@@ -551,7 +551,7 @@ public class GraphQLQuerySchemaHelper {
 				case EntityAttributeType.SMALLSERIAL_VALUE:
 				case EntityAttributeType.BIGSERIAL_VALUE:
 					graphqlObjectType = newInputObject()
-							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "WhereType")
+							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "FieldWhereType")
 							.description("Condition that the attribute must meet.")
 							.field(newInputObjectField()
 									.name("EQ")
@@ -591,7 +591,7 @@ public class GraphQLQuerySchemaHelper {
 				case EntityAttributeType.DOUBLE_PRECISION_VALUE:
 				case EntityAttributeType.REAL_VALUE:
 					graphqlObjectType = newInputObject()
-							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "WhereType")
+							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "FieldWhereType")
 							.description("Condition that the attribute must meet.")
 							.field(newInputObjectField()
 									.name("EQ")
@@ -638,20 +638,20 @@ public class GraphQLQuerySchemaHelper {
 	
 	public static final GraphQLInputObjectType getEntityWhereGraphqlObjectType(Database database, Entity entity, boolean multiSchema) {
 		GraphQLInputObjectType.Builder graphqlObjectType = newInputObject()
-				.name((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType")
+				.name((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "EntityWhereType")
 				.description("Conditions that the entities must meet to be returned.")
 				.field(newInputObjectField()
 						.name("AND")
 						.description("All the conditions must be met.")
-						.type(GraphQLList.list(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType"))))
+						.type(GraphQLList.list(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "EntityWhereType"))))
 				.field(newInputObjectField()
 						.name("OR")
 						.description("At least one of the conditions must be met.")
-						.type(GraphQLList.list(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType"))))
+						.type(GraphQLList.list(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "EntityWhereType"))))
 				.field(newInputObjectField()
 						.name("NOT")
 						.description("The condition must not be met.")
-						.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "WhereType")));
+						.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "EntityWhereType")));
 
 				for (int i = 0; i < entity.getAttributes().size(); i++) {
 					EntityAttribute attribute = entity.getAttributes().get(i);
@@ -660,7 +660,7 @@ public class GraphQLQuerySchemaHelper {
 						graphqlObjectType.field(newInputObjectField()
 								.name(attribute.getName())
 								.description(attribute.getDocumentation())
-								.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "WhereType")));
+								.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "FieldWhereType")));
 					}
 				}
 		
