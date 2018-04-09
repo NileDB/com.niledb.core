@@ -44,7 +44,6 @@ import data.EntityKey;
 import data.EntityReference;
 import data.EntityType;
 import data.impl.DataFactoryImpl;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -71,13 +70,10 @@ public class DatabaseHelper {
 			try {
 				HikariConfig config = new HikariConfig();
 				
-				JsonArray schemaNames = (JsonArray) ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAMES, new JsonArray().add("public"));
-				
 				config.setJdbcUrl("jdbc:postgresql://"
 						+ ConfigHelper.get(ConfigHelper.DB_HOST, "localhost") + ":"
 						+ ConfigHelper.get(ConfigHelper.DB_PORT, 5432) + "/"
-						+ ConfigHelper.get(ConfigHelper.DB_NAME, "nile")
-						+ (schemaNames.size() == 1 ? "?currentSchema=" + schemaNames.getString(0) : ""));
+						+ ConfigHelper.get(ConfigHelper.DB_NAME, "nile"));
 				config.setUsername((String) ConfigHelper.get(ConfigHelper.DB_USERNAME, "postgres"));
 				config.setPassword((String) ConfigHelper.get(ConfigHelper.DB_PASSWORD, "postgres"));
 				config.addDataSourceProperty("cachePrepStmts", "true");

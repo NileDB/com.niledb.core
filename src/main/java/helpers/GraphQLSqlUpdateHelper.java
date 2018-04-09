@@ -145,8 +145,6 @@ public class GraphQLSqlUpdateHelper {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static SqlUpdateCommand getCommand(Field field, DataFetchingEnvironment environment, Entity entity, Database database) throws Exception {
 		
-		boolean multiSchema = database.getSchemaNames().size() > 1;
-		
 		SqlUpdateCommand sqlCommand = new SqlUpdateCommand();
 		
 		EntityMap entityMap = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName());
@@ -257,7 +255,7 @@ public class GraphQLSqlUpdateHelper {
 			}
 		}
 		
-		sqlCommand.update = "UPDATE \"" + (multiSchema ? entity.getSchema() + "\".\"" : "") + entity.getName() + "\" AS \"" + entity.getName() + "_1\" ";
+		sqlCommand.update = "UPDATE \"" + entity.getSchema() + "\".\"" + entity.getName() + "\" AS \"" + entity.getName() + "_1\" ";
 		
 		int attributeCount = 0;
 		List<Selection> selections = field.getSelectionSet().getSelections();

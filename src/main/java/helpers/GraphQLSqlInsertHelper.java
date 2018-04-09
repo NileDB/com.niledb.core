@@ -145,8 +145,6 @@ public class GraphQLSqlInsertHelper {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static SqlInsertCommand getCommand(Field field, DataFetchingEnvironment environment, Entity entity, Database database) throws Exception {
 		
-		boolean multiSchema = database.getSchemaNames().size() > 1;
-		
 		SqlInsertCommand sqlCommand = new SqlInsertCommand();
 		
 		EntityMap entityMap = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName());
@@ -249,7 +247,7 @@ public class GraphQLSqlInsertHelper {
 			}
 		}
 		
-		sqlCommand.insert = "INSERT INTO \"" + (multiSchema ? entity.getSchema() + "\".\"" : "") + entity.getName() + "\" ";
+		sqlCommand.insert = "INSERT INTO \"" + entity.getSchema() + "\".\"" + entity.getName() + "\" ";
 		
 		int attributeCount = 0;
 		List<Selection> selections = field.getSelectionSet().getSelections();
