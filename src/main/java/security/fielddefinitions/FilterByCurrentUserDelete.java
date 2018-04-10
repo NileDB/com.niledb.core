@@ -22,7 +22,7 @@ import helpers.maps.SchemaMap;
 
 public class FilterByCurrentUserDelete {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__filterByCurrentUserDelete")
+			.name("deleteFilterByCurrentUser")
 			.description("It disables the filter by current authenticated user on the specified table.")
 			.argument(newArgument()
 					.name("table")

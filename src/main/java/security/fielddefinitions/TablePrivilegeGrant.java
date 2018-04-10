@@ -26,7 +26,7 @@ import helpers.maps.SchemaMap;
 
 public class TablePrivilegeGrant {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__tablePrivilegeGrant")
+			.name("grantTablePrivileges")
 			.description("It grants table access privileges to the specified roles.")
 			.argument(newArgument()
 					.name("privileges")

@@ -20,7 +20,7 @@ import helpers.Helper;
 
 public class RoleChangePassword {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__roleChangePassword")
+			.name("changePassword")
 			.description("It changes the role's password.")
 			.argument(newArgument()
 					.name("rolename")

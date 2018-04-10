@@ -25,7 +25,7 @@ import helpers.maps.SchemaMap;
 
 public class ColumnPrivilegeRevoke {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__columnPrivilegeRevoke")
+			.name("revokeColumnPrivileges")
 			.description("It revokes column access privileges from the specified roles.")
 			.argument(newArgument()
 					.name("privileges")

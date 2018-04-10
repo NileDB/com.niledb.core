@@ -26,7 +26,7 @@ import helpers.maps.SchemaMap;
 
 public class ColumnPrivilegeGrant {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__columnPrivilegeGrant")
+			.name("grantColumnPrivileges")
 			.description("It grants column access privileges to the specified roles.")
 			.argument(newArgument()
 					.name("privileges")

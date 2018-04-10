@@ -18,7 +18,7 @@ import io.vertx.core.json.JsonObject;
 
 public class CurrentUser {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__currentUser")
+			.name("getCurrentUser")
 			.description("It returns info about current logged user.")
 			.type(GraphQLObjectType.newObject()
 					.name("CurrentUserType")

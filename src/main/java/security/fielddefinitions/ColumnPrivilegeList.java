@@ -32,7 +32,7 @@ import io.vertx.core.json.JsonObject;
 
 public class ColumnPrivilegeList {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__columnPrivilegeList")
+			.name("getColumnPrivileges")
 			.description("It logins as a user into the system and returns a token that must be used in \"authorization\" variable when invoking GraphQL services.")
 			.argument(newArgument()
 					.name("username")

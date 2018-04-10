@@ -23,7 +23,7 @@ import helpers.Helper;
 
 public class RoleCreate {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__roleCreate")
+			.name("createRole")
 			.description("It creates a new role. The role can be both, a user (with password) or a group.")
 			.argument(newArgument()
 					.name("rolename")

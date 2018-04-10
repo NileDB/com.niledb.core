@@ -26,7 +26,7 @@ import helpers.maps.SchemaMap;
 
 public class FilterByCurrentUserCreate {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__filterByCurrentUserCreate")
+			.name("createFilterByCurrentUser")
 			.description("It filters rows by current authenticated user on the specified table.")
 			.argument(newArgument()
 					.name("table")

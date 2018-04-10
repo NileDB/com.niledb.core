@@ -10,7 +10,7 @@ import helpers.ConfigHelper;
 
 public class SecurityEnabled {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__securityEnabled")
+			.name("isSecurityEnabled")
 			.description("It returns if configuration is enabled or not.")
 			.type(GraphQLBoolean)
 			.dataFetcher(new DataFetcher<Boolean>() {

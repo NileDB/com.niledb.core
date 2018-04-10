@@ -20,7 +20,7 @@ import helpers.Helper;
 
 public class RoleRevoke {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__roleRevoke")
+			.name("revokeRole")
 			.description("It revokes a role (the revoked role) from another existing role.")
 			.argument(newArgument()
 					.name("rolename")

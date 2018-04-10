@@ -20,7 +20,7 @@ import helpers.Helper;
 
 public class RoleGrant {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__roleGrant")
+			.name("grantRole")
 			.description("It grants a role (the granted role) to another existing role.")
 			.argument(newArgument()
 					.name("rolename")

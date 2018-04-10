@@ -32,7 +32,7 @@ import io.vertx.core.json.JsonObject;
 
 public class RoleList {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__roleList")
+			.name("getRoles")
 			.description("It logins as a user into the system and returns a token that must be used in \"authorization\" variable when invoking GraphQL services.")
 			.argument(newArgument()
 					.name("username")

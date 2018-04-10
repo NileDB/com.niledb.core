@@ -22,7 +22,7 @@ import io.vertx.core.json.JsonArray;
 
 public class RoleDelete {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__roleDelete")
+			.name("deleteRole")
 			.description("It deletes a role. The role can be both, a user (with password) or a group.")
 			.argument(newArgument()
 					.name("rolename")

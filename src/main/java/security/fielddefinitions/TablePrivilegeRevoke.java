@@ -25,7 +25,7 @@ import helpers.maps.SchemaMap;
 
 public class TablePrivilegeRevoke {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__tablePrivilegeRevoke")
+			.name("revokeTablePrivileges")
 			.description("It revokes table access privileges from the specified roles.")
 			.argument(newArgument()
 					.name("privileges")

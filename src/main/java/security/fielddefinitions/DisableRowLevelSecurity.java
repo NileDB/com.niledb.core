@@ -22,7 +22,7 @@ import helpers.maps.SchemaMap;
 
 public class DisableRowLevelSecurity {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
-			.name("__disableRowLevelSecurity")
+			.name("disableRowLevelSecurity")
 			.description("It disables row-level security on the specified table.")
 			.argument(newArgument()
 					.name("table")

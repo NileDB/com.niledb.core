@@ -141,7 +141,7 @@ public class GraphQLHandler {
 				.description("Operations that make changes to the system.")
 				
 				.field(newFieldDefinition()
-						.name("__setData")
+						.name("setDataIntoMemory")
 						.description("It sets data into In-Memory Data Grid.")
 						.argument(newArgument()
 								.name("map")
@@ -165,7 +165,7 @@ public class GraphQLHandler {
 						}))
 				
 				.field(newFieldDefinition()
-						.name("__deleteData")
+						.name("deleteDataFromMemory")
 						.description("It deletes data from In-Memory Data Grid.")
 						.argument(newArgument()
 								.name("map")
@@ -185,7 +185,7 @@ public class GraphQLHandler {
 						}))
 				
 				.field(newFieldDefinition()
-						.name("__reloadSchema")
+						.name("reloadGraphQLSchema")
 						.description("It reloades the GraphQL schema from database.")
 						.type(GraphQLString)
 						.dataFetcher(new DataFetcher<String>() {
@@ -532,7 +532,7 @@ public class GraphQLHandler {
 		}
 		
 		queryBuilder.field(newFieldDefinition()
-				.name("__getData")
+				.name("getDataFromMemory")
 				.description("It gets data from In-Memory Data Grid.")
 				.argument(newArgument()
 						.name("map")
@@ -551,7 +551,7 @@ public class GraphQLHandler {
 				}));
 		
 		queryBuilder.field(newFieldDefinition()
-				.name("__systemAverageLoad")
+				.name("getSystemAverageLoad")
 				.description("It returns the system average load in order to decide to scale or not in a elastic context.")
 				.type(GraphQLFloat)
 				.dataFetcher(new DataFetcher<Double>() {
