@@ -76,6 +76,11 @@ public class DatabaseHelper {
 						+ ConfigHelper.get(ConfigHelper.DB_NAME, "nile"));
 				config.setUsername((String) ConfigHelper.get(ConfigHelper.DB_USERNAME, "postgres"));
 				config.setPassword((String) ConfigHelper.get(ConfigHelper.DB_PASSWORD, "postgres"));
+				if ((Boolean) ConfigHelper.get(ConfigHelper.DB_SSL, false)) {
+					config.addDataSourceProperty("ssl", true);
+					config.addDataSourceProperty("sslmode", (String) ConfigHelper.get(ConfigHelper.DB_SSL_MODE, "verify-ca"));
+					config.addDataSourceProperty("sslrootcert", (String) ConfigHelper.get(ConfigHelper.DB_SSL_ROOT_CERT, "misc/ssl/BaltimoreCyberTrustRoot.crt.pem"));
+				}
 				config.addDataSourceProperty("cachePrepStmts", "true");
 				config.addDataSourceProperty("prepStmtCacheSize", "250");
 				config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");

@@ -17,6 +17,9 @@
 	"db.schema.names": ["Orders"],
 	"db.host": "localhost",
 	"db.port": 5433,
+	"db.ssl": false,
+	"db.ssl.mode": "verify-ca",
+	"db.ssl.rootCert": "misc/ssl/BaltimoreCyberTrustRoot.crt",
 	
 	"db.replica.host": "localhost",
 	"db.replica.port": 5433,

@@ -46,6 +46,9 @@ public class ConfigHelper {
 	public final static String DB_REPLICA_PORT = "db.replica.port";
 	public final static String DB_USERNAME = "db.username";
 	public final static String DB_PASSWORD = "db.password";
+	public final static String DB_SSL = "db.ssl";
+	public final static String DB_SSL_MODE = "db.ssl.mode";
+	public final static String DB_SSL_ROOT_CERT = "db.ssl.rootCert";
 	public final static String SECURITY_ENABLED = "security.enabled";
 	public final static String SECURITY_ANONYMOUS_ROLENAME = "security.anonymous.rolename";
 	public final static String SECURITY_JWT_SECRET = "security.jwt.secret";

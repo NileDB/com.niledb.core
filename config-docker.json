@@ -17,6 +17,9 @@
 	"db.schema.names": ["public"],
 	"db.host": "db",
 	"db.port": 5432,
+	"db.ssl": false,
+	"db.ssl.mode": "verify-ca",
+	"db.ssl.rootCert": "misc/ssl/BaltimoreCyberTrustRoot.crt",
 	
 	"db.replica.host": "db",
 	"db.replica.port": 5432,
