@@ -43,6 +43,10 @@ dependencies {
 	compile "org.apache.commons:commons-lang3:3.7"
 	compile "com.zaxxer:HikariCP:2.7.8"
 	compile "com.nimbusds:oauth2-oidc-sdk:5.56"
+
+	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1')
+	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models')
+	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models-spanish')
 	
 	testCompile "junit:junit:4.12"
 	testCompile "io.vertx:vertx-unit:$vertxVersion"
