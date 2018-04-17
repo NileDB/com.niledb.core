@@ -283,7 +283,18 @@ public class DatabaseHelper {
 			
 			// Get tables
 			for (String schemaName : schemaNames) {
-				rs = dbmd.getTables(catalogName, schemaName, null, new String[] {"TABLE"});
+				
+				rs = dbmd.getTableTypes();
+				while (rs.next()) {
+					System.out.println(rs.getString(1));
+				}
+				
+				
+				rs = dbmd.getTables(catalogName, schemaName, null, new String[] {
+						"TABLE",
+						"FOREIGN TABLE",
+						"VIEW",
+						"MATERIALIZED VIEW"});
 				
 				while (rs.next()) {
 					String tableName = (String) rs.getObject("table_name");
@@ -418,7 +429,11 @@ public class DatabaseHelper {
 			
 			// Get references
 			for (String schemaName : schemaNames) {
-				rs = dbmd.getTables(catalogName, schemaName, null, new String[] {"TABLE"});
+				rs = dbmd.getTables(catalogName, schemaName, null, new String[] {
+						"TABLE",
+						"FOREIGN TABLE",
+						"VIEW",
+						"MATERIALIZED VIEW"});
 				
 				while (rs.next()) {
 					String tableName = (String) rs.getObject("table_name");
