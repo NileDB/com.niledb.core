@@ -609,6 +609,9 @@ public class GraphQLHandler {
 			}
 			SchemaMap.entityNameByUnderscoredName.put(underscoredName, fullName.substring(0, fullName.length() - 1));
 		}
+		if (SchemaMap.entities.size() == 0) {
+			entityEnumType.value("NONE");
+		}
 		additionalTypes.add(entityEnumType.build());
 		
 		// Build GraphQL schema

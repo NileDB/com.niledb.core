@@ -1,6 +1,6 @@
 {
 	"service.host": "localhost",
-	"service.port": 8888,
+	"service.port": 7777,
 	"service.ssl": false,
 	"service.ssl.autoGenerateCert": false,
 	"service.ssl.key.path": "misc/ssl/private.pem",
@@ -13,16 +13,16 @@
 	"service.redirectFromPort": 8080,
 	"service.redirectUrl": "https://localhost:8443",
 	
-	"db.name": "test",
+	"db.name": "niledb",
 	"db.schema.names": ["public"],
 	"db.host": "localhost",
-	"db.port": 5432,
+	"db.port": 5433,
 	"db.ssl": false,
 	"db.ssl.mode": "verify-ca",
 	"db.ssl.rootCert": "misc/ssl/BaltimoreCyberTrustRoot.crt",
 	
 	"db.replica.host": "localhost",
-	"db.replica.port": 5432,
+	"db.replica.port": 5433,
 	
 	"db.username": "postgres",
 	"db.password": "postgres",
@@ -31,7 +31,7 @@
 	"security.anonymous.rolename": "anonymous",
 	"security.jwt.secret": "password_of_at_least_32_characters",
 	
-	"mqtt.enabled": true,
+	"mqtt.enabled": false,
 	"mqtt.port": 1883,
 	
 	"model.path": "model.xmi",
