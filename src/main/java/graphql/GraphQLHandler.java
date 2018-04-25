@@ -376,9 +376,7 @@ public class GraphQLHandler {
 								Map<String, Object> context = (Map<String, Object>) environment.getContext();
 								for (String fieldName: result.fieldNames()) {
 									context.put(fieldName, result.getValue(fieldName));
-									
 								}
-								
 								return result;
 							}
 							catch (Exception e) {

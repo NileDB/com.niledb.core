@@ -91,6 +91,7 @@ public class GraphQLQuerySchemaHelper {
 					case CustomTypeAttributeType.TIMESTAMP_WITH_TIME_ZONE_VALUE:
 					case CustomTypeAttributeType.TIME_WITH_TIME_ZONE_VALUE:
 					case CustomTypeAttributeType.MONEY_VALUE:
+					case CustomTypeAttributeType.POINT_VALUE:
 						fieldDefinition.type(GraphQLList.list(GraphQLString));
 						break;
 						
@@ -132,6 +133,7 @@ public class GraphQLQuerySchemaHelper {
 					case CustomTypeAttributeType.TIMESTAMP_WITH_TIME_ZONE_VALUE:
 					case CustomTypeAttributeType.TIME_WITH_TIME_ZONE_VALUE:
 					case CustomTypeAttributeType.MONEY_VALUE:
+					case CustomTypeAttributeType.POINT_VALUE:
 						fieldDefinition.type(GraphQLString);
 						break;
 						
@@ -212,6 +214,7 @@ public class GraphQLQuerySchemaHelper {
 					case EntityAttributeType.TIMESTAMP_WITH_TIME_ZONE_VALUE:
 					case EntityAttributeType.TIME_WITH_TIME_ZONE_VALUE:
 					case EntityAttributeType.MONEY_VALUE:
+					case EntityAttributeType.POINT_VALUE:
 						fieldDefinition.type(GraphQLList.list(GraphQLString));
 						break;
 						
@@ -256,6 +259,7 @@ public class GraphQLQuerySchemaHelper {
 					case EntityAttributeType.TIMESTAMP_WITH_TIME_ZONE_VALUE:
 					case EntityAttributeType.TIME_WITH_TIME_ZONE_VALUE:
 					case EntityAttributeType.MONEY_VALUE:
+					case EntityAttributeType.POINT_VALUE:
 						fieldDefinition.type(GraphQLString);
 						break;
 						

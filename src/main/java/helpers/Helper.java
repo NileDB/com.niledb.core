@@ -174,14 +174,11 @@ public class Helper {
 			case "timetz":
 			case "_timetz":
 				return EntityAttributeType.TIME_WITH_TIME_ZONE;
+			case "point":
+			case "_point":
+				return EntityAttributeType.POINT;
 			default:
-				// Note: postgis must be created in "public" schema in order to work properly!!
-				if (typeName.equals("geography")) {
-					return EntityAttributeType.GEOGRAPHY;
-				}
-				else {
-					return EntityAttributeType.CUSTOM_TYPE;
-				}
+				return EntityAttributeType.CUSTOM_TYPE;
 		}
 	}
 	
@@ -241,14 +238,11 @@ public class Helper {
 			case "timetz":
 			case "_timetz":
 				return CustomTypeAttributeType.TIME_WITH_TIME_ZONE;
+			case "point":
+			case "_point":
+				return CustomTypeAttributeType.POINT;
 			default:
-				// Note: postgis must be created in "public" schema in order to work properly!!
-				if (typeName.equals("geography")) {
-					return CustomTypeAttributeType.GEOGRAPHY;
-				}
-				else {
-					return CustomTypeAttributeType.CUSTOM_TYPE;
-				}
+				return CustomTypeAttributeType.CUSTOM_TYPE;
 		}
 	}
 	
@@ -272,6 +266,7 @@ public class Helper {
 			case "_interval":
 			case "_timestamptz":
 			case "_timetz":
+			case "_point":
 				return true;
 			default:
 				return false;

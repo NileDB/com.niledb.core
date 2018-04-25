@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.postgresql.geometric.PGpoint;
 import org.postgresql.util.PGInterval;
 import org.postgresql.util.PGmoney;
 
@@ -122,6 +123,11 @@ public class GraphQLSqlUpdateHelper {
 					case CustomTypeAttributeType.MONEY_VALUE:
 						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"";
 						sqlCommand.values.add(new PGmoney(((String) fieldValue)));
+						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+						break;
+					case CustomTypeAttributeType.POINT_VALUE:
+						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"";
+						sqlCommand.values.add(new PGpoint(((String) fieldValue)));
 						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
 						break;
 					default:
@@ -229,6 +235,11 @@ public class GraphQLSqlUpdateHelper {
 							case EntityAttributeType.MONEY_VALUE:
 								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
 								sqlCommand.values.add(new PGmoney(((String) fieldValue)));
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								break;
+							case EntityAttributeType.POINT_VALUE:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.values.add(new PGpoint(((String) fieldValue)));
 								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
 								break;
 							default:
