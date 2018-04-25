@@ -57,7 +57,9 @@ public enum CustomTypeAttributeType {
 
 	TIMESTAMP_WITH_TIME_ZONE(20, "TIMESTAMP_WITH_TIME_ZONE", "timestamp with time zone"),
 
-	TIME_WITH_TIME_ZONE(21, "TIME_WITH_TIME_ZONE", "time with time zone");
+	TIME_WITH_TIME_ZONE(21, "TIME_WITH_TIME_ZONE", "time with time zone"),
+
+	GEOGRAPHY(30, "GEOGRAPHY", "geography");
 
 	public static final int TEXT_VALUE = 0;
 
@@ -97,9 +99,11 @@ public enum CustomTypeAttributeType {
 
 	public static final int TIME_WITH_TIME_ZONE_VALUE = 21;
 
+	public static final int GEOGRAPHY_VALUE = 30;
+
 	private static final CustomTypeAttributeType[] VALUES_ARRAY = new CustomTypeAttributeType[] { TEXT, BOOLEAN,
 			INTEGER, DECIMAL, MONEY, DATE, TIMESTAMP, CUSTOM_TYPE, BYTEA, SMALLINT, BIGINT, DOUBLE_PRECISION, REAL,
-			VARCHAR, CHAR, TIME, INTERVAL, TIMESTAMP_WITH_TIME_ZONE, TIME_WITH_TIME_ZONE, };
+			VARCHAR, CHAR, TIME, INTERVAL, TIMESTAMP_WITH_TIME_ZONE, TIME_WITH_TIME_ZONE, GEOGRAPHY, };
 
 	public static final List<CustomTypeAttributeType> VALUES = Collections
 			.unmodifiableList(Arrays.asList(VALUES_ARRAY));
@@ -164,6 +168,8 @@ public enum CustomTypeAttributeType {
 			return TIMESTAMP_WITH_TIME_ZONE;
 		case TIME_WITH_TIME_ZONE_VALUE:
 			return TIME_WITH_TIME_ZONE;
+		case GEOGRAPHY_VALUE:
+			return GEOGRAPHY;
 		}
 		return null;
 	}

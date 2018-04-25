@@ -175,7 +175,13 @@ public class Helper {
 			case "_timetz":
 				return EntityAttributeType.TIME_WITH_TIME_ZONE;
 			default:
-				return EntityAttributeType.CUSTOM_TYPE;
+				// Note: postgis must be created in "public" schema in order to work properly!!
+				if (typeName.equals("geography")) {
+					return EntityAttributeType.GEOGRAPHY;
+				}
+				else {
+					return EntityAttributeType.CUSTOM_TYPE;
+				}
 		}
 	}
 	
@@ -236,7 +242,13 @@ public class Helper {
 			case "_timetz":
 				return CustomTypeAttributeType.TIME_WITH_TIME_ZONE;
 			default:
-				return CustomTypeAttributeType.CUSTOM_TYPE;
+				// Note: postgis must be created in "public" schema in order to work properly!!
+				if (typeName.equals("geography")) {
+					return CustomTypeAttributeType.GEOGRAPHY;
+				}
+				else {
+					return CustomTypeAttributeType.CUSTOM_TYPE;
+				}
 		}
 	}
 	

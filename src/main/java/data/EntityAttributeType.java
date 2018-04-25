@@ -63,8 +63,10 @@ public enum EntityAttributeType {
 
 	TIMESTAMP_WITH_TIME_ZONE(20, "TIMESTAMP_WITH_TIME_ZONE", "timestamp with time zone"),
 
-	TIME_WITH_TIME_ZONE(21, "TIME_WITH_TIME_ZONE", "time with time zone");
+	TIME_WITH_TIME_ZONE(21, "TIME_WITH_TIME_ZONE", "time with time zone"),
 
+	GEOGRAPHY(30, "GEOGRAPHY", "geography");
+	
 	public static final int TEXT_VALUE = 0;
 
 	public static final int BOOLEAN_VALUE = 1;
@@ -106,12 +108,14 @@ public enum EntityAttributeType {
 	public static final int INTERVAL_VALUE = 19;
 
 	public static final int TIMESTAMP_WITH_TIME_ZONE_VALUE = 20;
-
+	
 	public static final int TIME_WITH_TIME_ZONE_VALUE = 21;
-
+	
+	public static final int GEOGRAPHY_VALUE = 30;
+	
 	private static final EntityAttributeType[] VALUES_ARRAY = new EntityAttributeType[] { TEXT, BOOLEAN, INTEGER,
 			DECIMAL, MONEY, DATE, TIMESTAMP, CUSTOM_TYPE, SERIAL, BYTEA, SMALLINT, BIGINT, DOUBLE_PRECISION, REAL,
-			SMALLSERIAL, BIGSERIAL, VARCHAR, CHAR, TIME, INTERVAL, TIMESTAMP_WITH_TIME_ZONE, TIME_WITH_TIME_ZONE, };
+			SMALLSERIAL, BIGSERIAL, VARCHAR, CHAR, TIME, INTERVAL, TIMESTAMP_WITH_TIME_ZONE, TIME_WITH_TIME_ZONE, GEOGRAPHY, };
 
 	public static final List<EntityAttributeType> VALUES = Collections.unmodifiableList(Arrays.asList(VALUES_ARRAY));
 
@@ -181,6 +185,8 @@ public enum EntityAttributeType {
 			return TIMESTAMP_WITH_TIME_ZONE;
 		case TIME_WITH_TIME_ZONE_VALUE:
 			return TIME_WITH_TIME_ZONE;
+		case GEOGRAPHY_VALUE:
+			return GEOGRAPHY;
 		}
 		return null;
 	}

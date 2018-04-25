@@ -23,6 +23,7 @@ import java.util.Set;
 import data.Database;
 import data.Entity;
 import data.EntityAttribute;
+import data.EntityAttributeType;
 import data.EntityKey;
 import data.EntityReference;
 import graphql.language.Argument;
@@ -91,8 +92,14 @@ public class GraphQLSqlSelectHelper {
 				// Attributes
 				EntityAttribute attribute = entityMap.attributes.get(childField.getName());
 				if (attribute != null) {
-					sqlCommand.select += (attributeCount > 0 ? ", " : "") + "\"" + entity.getName() + "_" + level
-							+ "\".\"" + childField.getName() + "\"";
+					if (attribute.getType() == EntityAttributeType.GEOGRAPHY) {
+						sqlCommand.select += (attributeCount > 0 ? ", " : "") + "ST_AsText(\"" + entity.getName() + "_" + level
+								+ "\".\"" + childField.getName() + "\") AS \"" + childField.getName() + "\"";
+					}
+					else {
+						sqlCommand.select += (attributeCount > 0 ? ", " : "") + "\"" + entity.getName() + "_" + level
+								+ "\".\"" + childField.getName() + "\"";
+					}
 					sqlCommand.addedAttributes.put(childField.getName(), true);
 					attributeCount++;
 				} 
