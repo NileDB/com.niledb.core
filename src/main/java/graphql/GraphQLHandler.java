@@ -300,7 +300,7 @@ public class GraphQLHandler {
 								}
 								ResultSet rs = ps.executeQuery();
 								rs.next();
-
+								
 								JsonArray result = null;
 								String resultString = rs.getString("list");
 								if (resultString != null) {

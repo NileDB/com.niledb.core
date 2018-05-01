@@ -105,7 +105,7 @@ public class GraphQLSqlSelectHelper {
 						Entity referencedEntity = (Entity) referencedKey.eContainer();
 						
 						sqlCommand.select += (attributeCount > 0 ? ", " : "") + "\"" + alias + "_" + (level + 1) + "\" AS \"" + alias + "\"";
-						sqlCommand.addedDirectReferences.put(alias, true);
+						sqlCommand.addedDirectReferences.put(alias + "_" + (level + 1), true);
 						attributeCount++;
 						
 						SqlSelectCommand sqlSubcommand = getCommand(childField, environment, referencedEntity, database,
