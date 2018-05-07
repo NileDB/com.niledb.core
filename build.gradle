@@ -46,6 +46,12 @@ dependencies {
 
 	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1')
 	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models')
+	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models-arabic')
+	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models-chinese')
+	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models-english')
+	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models-english-kbp')
+	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models-french')
+	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models-german')
 	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models-spanish')
 	
 	testCompile "junit:junit:4.12"
