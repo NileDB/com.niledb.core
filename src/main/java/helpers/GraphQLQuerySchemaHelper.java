@@ -697,6 +697,7 @@ public class GraphQLQuerySchemaHelper {
 				.description("The attribute to be ordered by.");
 		
 		// Get attributes
+		boolean hasValues = false;
 		for (int i = 0; i < entity.getAttributes().size(); i++) {
 			EntityAttribute attribute = entity.getAttributes().get(i);
 			
@@ -722,10 +723,11 @@ public class GraphQLQuerySchemaHelper {
 					case EntityAttributeType.DOUBLE_PRECISION_VALUE:
 					case EntityAttributeType.REAL_VALUE:
 						enumType.value(attribute.getName());
+						hasValues = true;
 						break;
 				}
 			}
 		}
-		return enumType.build();
+		return (hasValues ? enumType.build() : null);
 	}
 }

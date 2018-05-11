@@ -51,6 +51,7 @@ import graphql.language.Field;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
@@ -238,10 +239,6 @@ public class GraphQLHandler {
 				}
 			}
 			
-			// EntityOrderByType
-			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityOrderByAttributesGraphqlEnumType(database, entity, multiSchema));
-			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityOrderByGraphqlObjectType(database, entity, multiSchema));
-			
 			// EntityWhereType
 			additionalTypes.add(GraphQLQuerySchemaHelper.getEntityWhereGraphqlObjectType(database, entity, multiSchema));
 			
@@ -253,7 +250,7 @@ public class GraphQLHandler {
 			SchemaMap.entities.put(entity.getSchema() + "." + entity.getName(), entityMap);
 			
 			// Entity query definition
-			queryBuilder.field(newFieldDefinition()
+			GraphQLFieldDefinition.Builder fieldDefinitionBuilder = newFieldDefinition()
 					.name((schemaNames.size() == 1 ? "" : entity.getSchema() + "_") + entity.getName() + "List")
 					.description("It queries " + Helper.toFirstUpper(entity.getName()) + " entities.")
 					.type(new GraphQLList(GraphQLQuerySchemaHelper.getEntityResultGraphqlObjectType(database, entity, multiSchema)))
@@ -261,10 +258,6 @@ public class GraphQLHandler {
 							.name("where")
 							.description("Search criteria.")
 							.type(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "EntityWhereType")))
-					.argument(newArgument()
-							.name("orderBy")
-							.description("Sorting criteria.")
-							.type(new GraphQLList(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "OrderByType"))))
 					.argument(newArgument()
 							.name("limit")
 							.description("Maximum number of items to return.")
@@ -331,7 +324,21 @@ public class GraphQLHandler {
 								}
 							}
 						}
-					}));
+					});
+
+			// EntityOrderByType
+			GraphQLEnumType enumType = GraphQLQuerySchemaHelper.getEntityOrderByAttributesGraphqlEnumType(database, entity, multiSchema);
+			if (enumType != null) {
+				additionalTypes.add(enumType);
+				additionalTypes.add(GraphQLQuerySchemaHelper.getEntityOrderByGraphqlObjectType(database, entity, multiSchema));
+
+				fieldDefinitionBuilder.argument(newArgument()
+						.name("orderBy")
+						.description("Sorting criteria.")
+						.type(new GraphQLList(GraphQLTypeReference.typeRef((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "OrderByType"))));
+			}
+			
+			queryBuilder.field(fieldDefinitionBuilder);
 			
 			// Entity mutation insert definition
 			mutationBuilder.field(newFieldDefinition()
