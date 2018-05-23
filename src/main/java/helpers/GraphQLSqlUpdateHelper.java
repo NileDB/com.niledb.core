@@ -133,7 +133,7 @@ public class GraphQLSqlUpdateHelper {
 					default:
 						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"";
 						sqlCommand.values.add(((String) fieldValue));
-						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::" + attribute.getEnumType() : "");
+						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"" : "");
 				}
 				attributeCount++;
 			}
@@ -245,7 +245,7 @@ public class GraphQLSqlUpdateHelper {
 							default:
 								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
 								sqlCommand.values.add(((String) fieldValue));
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::" + attribute.getEnumType() : "");
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"" : "");
 						}
 						attributeCount++;
 					}

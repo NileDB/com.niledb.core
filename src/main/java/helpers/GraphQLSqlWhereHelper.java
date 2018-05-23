@@ -21,6 +21,7 @@ import data.Database;
 import data.Entity;
 import data.EntityAttribute;
 import data.EntityAttributeType;
+import graphql.language.EnumValue;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.ObjectField;
@@ -121,7 +122,12 @@ public class GraphQLSqlWhereHelper {
 							for (int j = 0; j < values.size(); j++) {
 								where.where.append(j != 0 ? ", " : "");
 								where.where.append("?");
-								where.whereParameters.add(((StringValue) values.get(j)).getValue());
+								if (values.get(j) instanceof EnumValue) {
+									where.whereParameters.add(((EnumValue) values.get(j)).getName());
+								}
+								else {
+									where.whereParameters.add(((StringValue) values.get(j)).getValue());
+								}
 							}
 							where.where.append(")");
 							break;

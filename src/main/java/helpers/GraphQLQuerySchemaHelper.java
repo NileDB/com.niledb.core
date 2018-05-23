@@ -393,6 +393,87 @@ public class GraphQLQuerySchemaHelper {
 		if (!attribute.isArray()) {
 			switch (attribute.getType().getValue()) {
 				case EntityAttributeType.TEXT_VALUE:
+					if (attribute.getEnumType() != null) {
+						graphqlObjectType = newInputObject()
+								.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "FieldWhereType")
+								.description("Condition that the attribute must meet.");
+						
+						graphqlObjectType.field(newInputObjectField()
+										.name("EQ")
+										.description("It is equals to.")
+										.type(GraphQLTypeReference
+												.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")))
+								.field(newInputObjectField()
+										.name("NE")
+										.description("It is not equals to.")
+										.type(GraphQLTypeReference
+												.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")))
+								.field(newInputObjectField()
+										.name("IN")
+										.description("It is in the list of values.")
+										.type(GraphQLList.list(GraphQLTypeReference
+												.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"))))
+								.field(newInputObjectField()
+										.name("IS_NULL")
+										.description("It is null (true) or not (false).")
+										.type(GraphQLBoolean));
+					}
+					else {
+						graphqlObjectType = newInputObject()
+								.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "FieldWhereType")
+								.description("Condition that the attribute must meet.");
+						
+						if (attribute.getEnumType() == null
+								|| attribute.getEnumType().equals("tsvector")) {
+							graphqlObjectType.field(newInputObjectField()
+									.name("SEARCH")
+									.description("Full text query.")
+									.type(GraphQLTypeReference.typeRef("FullTextQueryType")).build());
+						}
+						
+						graphqlObjectType.field(newInputObjectField()
+										.name("EQ")
+										.description("It is equals to.")
+										.type(GraphQLString))
+								.field(newInputObjectField()
+										.name("NE")
+										.description("It is not equals to.")
+										.type(GraphQLString))
+								.field(newInputObjectField()
+										.name("LIKE")
+										.description("It is equals to (using LIKE expressions).")
+										.type(GraphQLString))
+								.field(newInputObjectField()
+										.name("ILIKE")
+										.description("It is equals to (using ILIKE expressions [case-insensitive]).")
+										.type(GraphQLString))
+								.field(newInputObjectField()
+										.name("GT")
+										.description("It is greater than.")
+										.type(GraphQLString))
+								.field(newInputObjectField()
+										.name("GE")
+										.description("It is greater than or equals to.")
+										.type(GraphQLString))
+								.field(newInputObjectField()
+										.name("LT")
+										.description("It is less than.")
+										.type(GraphQLString))
+								.field(newInputObjectField()
+										.name("LE")
+										.description("It is less than or equals to.")
+										.type(GraphQLString))
+								.field(newInputObjectField()
+										.name("IN")
+										.description("It is in the list of values.")
+										.type(GraphQLList.list(GraphQLString)))
+								.field(newInputObjectField()
+										.name("IS_NULL")
+										.description("It is null (true) or not (false).")
+										.type(GraphQLBoolean));
+					}
+					break;
+					
 				case EntityAttributeType.VARCHAR_VALUE:
 					graphqlObjectType = newInputObject()
 							.name((multiSchema ? Helper.toFirstUpper(((Entity) attribute.eContainer()).getSchema()) + "_" : "") + Helper.toFirstUpper(((Entity) attribute.eContainer()).getName()) + Helper.toFirstUpper(attribute.getName()) + "FieldWhereType")
