@@ -36,6 +36,7 @@ import graphql.language.Argument;
 import graphql.language.Field;
 import graphql.language.ObjectField;
 import graphql.language.Selection;
+import graphql.language.StringValue;
 import graphql.schema.DataFetchingEnvironment;
 import helpers.maps.EntityMap;
 import helpers.maps.SchemaMap;
@@ -245,6 +246,66 @@ public class GraphQLSqlUpdateHelper {
 							default:
 								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
 								sqlCommand.values.add(((String) fieldValue));
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"" : "");
+						}
+						attributeCount++;
+					}
+					else if (fieldValue instanceof List) {
+						EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
+						EntityAttributeType attributeType = attribute.getType();
+						switch (attributeType.getValue()) {
+							case EntityAttributeType.BYTEA_VALUE:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.values.add(((String) fieldValue).getBytes());
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								break;
+							case EntityAttributeType.DATE_VALUE:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.values.add(new Timestamp(DateUtils.parseDate(((String) fieldValue), new String[] {"yyyy-MM-dd"}).getTime()));
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								break;
+							case EntityAttributeType.TIME_VALUE:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.values.add(new Timestamp(DateUtils.parseDate(((String) fieldValue), new String[] {"HH:mm", "HH:mm:ss", "HH:mm:ss.SSS"}).getTime()));
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								break;
+							case EntityAttributeType.TIME_WITH_TIME_ZONE_VALUE:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.values.add(new Timestamp(DateUtils.parseDate(((String) fieldValue), new String[] {"HH:mm", "HH:mm:ss", "HH:mm:ss.SSS", "HH:mmX", "HH:mm:ssX", "HH:mm:ss.SSSX"}).getTime()));
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								break;
+							case EntityAttributeType.TIMESTAMP_VALUE:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.values.add(new Timestamp(DateUtils.parseDate(((String) fieldValue), new String[] {"yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.SSS"}).getTime()));
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								break;
+							case EntityAttributeType.TIMESTAMP_WITH_TIME_ZONE_VALUE:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.values.add(new Timestamp(DateUtils.parseDate(((String) fieldValue), new String[] {"yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mmX", "yyyy-MM-dd'T'HH:mm:ssX", "yyyy-MM-dd'T'HH:mm:ss.SSSX"}).getTime()));
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								break;
+							case EntityAttributeType.INTERVAL_VALUE:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.values.add(new PGInterval(((String) fieldValue)));
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								break;
+							case EntityAttributeType.MONEY_VALUE:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.values.add(new PGmoney(((String) fieldValue)));
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								break;
+							case EntityAttributeType.POINT_VALUE:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.values.add(new PGpoint(((String) fieldValue)));
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								break;
+							default:
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								String[] values = new String[((List) fieldValue).size()];
+								for (int k = 0; k < values.length; k++) {
+									values[k] = ((StringValue) ((List) fieldValue).get(k)).getValue();
+								}
+								sqlCommand.values.add(values);
 								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"" : "");
 						}
 						attributeCount++;
