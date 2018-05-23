@@ -18,6 +18,7 @@ package data.impl;
 import data.CustomType;
 import data.CustomTypeAttribute;
 import data.CustomTypeAttributeType;
+import data.EnumType;
 
 public class CustomTypeAttributeImpl implements CustomTypeAttribute {
 
@@ -45,10 +46,8 @@ public class CustomTypeAttributeImpl implements CustomTypeAttribute {
 
 	protected CustomType customType;
 
-	protected static final String ENUM_TYPE_EDEFAULT = null;
-
-	protected String enumType = ENUM_TYPE_EDEFAULT;
-
+	protected EnumType enumType;
+	
 	protected static final int LENGTH_EDEFAULT = 0;
 
 	protected int length = LENGTH_EDEFAULT;
@@ -105,11 +104,15 @@ public class CustomTypeAttributeImpl implements CustomTypeAttribute {
 		customType = newCustomType;
 	}
 
-	public String getEnumType() {
+	public EnumType getEnumType() {
 		return enumType;
 	}
 
-	public void setEnumType(String newEnumType) {
+	public EnumType basicGetEnumType() {
+		return enumType;
+	}
+
+	public void setEnumType(EnumType newEnumType) {
 		enumType = newEnumType;
 	}
 

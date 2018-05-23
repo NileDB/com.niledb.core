@@ -19,6 +19,7 @@ import data.CustomType;
 import data.Entity;
 import data.EntityAttribute;
 import data.EntityAttributeType;
+import data.EnumType;
 
 public class EntityAttributeImpl implements EntityAttribute {
 
@@ -54,10 +55,8 @@ public class EntityAttributeImpl implements EntityAttribute {
 
 	protected CustomType customType;
 
-	protected static final String ENUM_TYPE_EDEFAULT = null;
-
-	protected String enumType = ENUM_TYPE_EDEFAULT;
-
+	protected EnumType enumType;
+	
 	protected static final int LENGTH_EDEFAULT = 0;
 
 	protected int length = LENGTH_EDEFAULT;
@@ -130,11 +129,15 @@ public class EntityAttributeImpl implements EntityAttribute {
 		customType = newCustomType;
 	}
 
-	public String getEnumType() {
+	public EnumType getEnumType() {
 		return enumType;
 	}
 
-	public void setEnumType(String newEnumType) {
+	public EnumType basicGetEnumType() {
+		return enumType;
+	}
+
+	public void setEnumType(EnumType newEnumType) {
 		enumType = newEnumType;
 	}
 

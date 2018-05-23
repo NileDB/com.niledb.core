@@ -15,36 +15,50 @@
  */
 package data.impl;
 
-import data.CustomType;
 import data.Database;
-import data.Entity;
 import data.EnumType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseImpl implements Database {
+public class EnumTypeImpl implements EnumType {
 
+	Database eContainer;
+
+	public void eSetContainer(Database eContainer) {
+		this.eContainer = eContainer;
+	}
+
+	public Database eContainer() {
+		return eContainer;
+	}
+	
+	protected static final String SCHEMA_EDEFAULT = null;
+	
 	protected static final String NAME_EDEFAULT = null;
-
+	
+	protected String schema = SCHEMA_EDEFAULT;
+	
 	protected String name = NAME_EDEFAULT;
 
-	protected List<String> schemaNames;
+	protected List<String> values;
 
-	protected List<Entity> entities;
-
-	protected List<CustomType> customTypes;
-
-	protected List<EnumType> enumTypes;
-	
 	protected static final String DOCUMENTATION_EDEFAULT = null;
 
 	protected String documentation = DOCUMENTATION_EDEFAULT;
 
-	protected DatabaseImpl() {
+	protected EnumTypeImpl() {
 		super();
 	}
-
+	
+	public String getSchema() {
+		return schema;
+	}
+	
+	public void setSchema(String newSchema) {
+		schema = newSchema;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -53,34 +67,13 @@ public class DatabaseImpl implements Database {
 		name = newName;
 	}
 
-	public List<String> getSchemaNames() {
-		if (schemaNames == null) {
-			schemaNames = new ArrayList<String>();
+	public List<String> getValues() {
+		if (values == null) {
+			values = new ArrayList<String>();
 		}
-		return schemaNames;
+		return values;
 	}
 
-	public List<Entity> getEntities() {
-		if (entities == null) {
-			entities = new ArrayList<Entity>();
-		}
-		return entities;
-	}
-
-	public List<CustomType> getCustomTypes() {
-		if (customTypes == null) {
-			customTypes = new ArrayList<CustomType>();
-		}
-		return customTypes;
-	}
-
-	public List<EnumType> getEnumTypes() {
-		if (enumTypes == null) {
-			enumTypes = new ArrayList<EnumType>();
-		}
-		return enumTypes;
-	}
-	
 	public String getDocumentation() {
 		return documentation;
 	}
@@ -92,11 +85,14 @@ public class DatabaseImpl implements Database {
 	@Override
 	public String toString() {
 		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (name: ");
+		result.append(" (schema: ");
+		result.append(schema);
+		result.append(", name: ");
 		result.append(name);
 		result.append(", documentation: ");
 		result.append(documentation);
 		result.append(')');
 		return result.toString();
 	}
+
 }

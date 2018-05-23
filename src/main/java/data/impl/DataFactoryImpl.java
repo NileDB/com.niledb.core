@@ -58,4 +58,8 @@ public class DataFactoryImpl implements DataFactory {
 		return customTypeAttribute;
 	}
 
+	public EnumType createEnumType() {
+		EnumTypeImpl enumType = new EnumTypeImpl();
+		return enumType;
+	}
 }

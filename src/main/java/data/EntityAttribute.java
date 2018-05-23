@@ -45,9 +45,9 @@ public interface EntityAttribute {
 
 	void setCustomType(CustomType value);
 
-	String getEnumType();
+	EnumType getEnumType();
 
-	void setEnumType(String value);
+	void setEnumType(EnumType value);
 
 	int getLength();
 

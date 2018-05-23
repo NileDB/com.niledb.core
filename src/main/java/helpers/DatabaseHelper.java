@@ -17,10 +17,13 @@ package helpers;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.sql.DataSource;
@@ -43,6 +46,7 @@ import data.EntityAttributeType;
 import data.EntityKey;
 import data.EntityReference;
 import data.EntityType;
+import data.EnumType;
 import data.impl.DataFactoryImpl;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -185,9 +189,37 @@ public class DatabaseHelper {
 			database.setName(databaseName);
 			database.getSchemaNames().addAll(schemaNames);
 			database.setDocumentation("Model generated from Database '" + databaseName + "'");
+
+			// Map domains to its base types
+			// We don't care about domains in our services (at least currently)
+			Map<String, String> domainToTypeMap = new HashMap<String, String>();
+			Statement statement = connection.createStatement();
+			StringBuffer sb = new StringBuffer()
+					.append("SELECT nd.nspname AS \"domainSchema\",")
+					.append("       d.typname AS \"domainName\",")
+					.append("       nb.nspname AS \"typeSchema\",")
+					.append("       b.typname AS \"typeName\" ")
+					.append("FROM pg_type AS d,")
+					.append("     pg_type AS b,")
+					.append("     pg_namespace AS nd,")
+					.append("     pg_namespace AS nb ")
+					.append("WHERE d.typtype = 'd' ")
+					.append("AND   d.typbasetype = b.oid ")
+					.append("AND   nd.oid = d.typnamespace ")
+					.append("AND   nb.oid = b.typnamespace");
+			ResultSet rs = statement.executeQuery(sb.toString());
+			while (rs.next()) {
+				String domainSchema = rs.getString("domainSchema");
+				String domainName = rs.getString("domainName");
+				String typeSchema = rs.getString("typeSchema");
+				String typeName = rs.getString("typeName");
+				domainToTypeMap.put((domainSchema.equals("pg_catalog") ? domainName : "\"" + domainSchema + "\".\"" + domainName + "\""), 
+						(typeSchema.equals("pg_catalog") ? typeName : "\"" + typeSchema + "\".\"" + typeName + "\""));
+			}
+			rs.close();
 			
 			// Get catalog name
-			ResultSet rs = dbmd.getCatalogs();
+			rs = dbmd.getCatalogs();
 			while (rs.next()) {
 				catalogName = (String) rs.getObject("TABLE_CAT");
 			}
@@ -195,6 +227,7 @@ public class DatabaseHelper {
 			
 			List<Entity> entities = database.getEntities();
 			List<CustomType> customTypes = database.getCustomTypes();
+			List<EnumType> enumTypes = database.getEnumTypes();
 			
 			// Get custom types
 			for (String schemaName : schemaNames) {
@@ -222,7 +255,6 @@ public class DatabaseHelper {
 				
 				while (rs.next()) {
 					String typeName = (String) rs.getObject("table_name");
-					
 					CustomType customType = null;
 					for (int i = 0; i < customTypes.size(); i++) {
 						if (customTypes.get(i).getSchema().equals(schemaName)
@@ -239,6 +271,9 @@ public class DatabaseHelper {
 						String columnName = (String) columnsRs.getObject("COLUMN_NAME");
 						String columnRemarks = (String) columnsRs.getObject("REMARKS");
 						String columnTypeName = (String) columnsRs.getObject("TYPE_NAME");
+						if (domainToTypeMap.get(columnTypeName) != null) {
+							columnTypeName = domainToTypeMap.get(columnTypeName);
+						}
 						Integer columnSize = (Integer) columnsRs.getObject("COLUMN_SIZE");
 						Integer decimalDigits = (Integer) columnsRs.getObject("DECIMAL_DIGITS");
 						
@@ -259,6 +294,10 @@ public class DatabaseHelper {
 								customTypeSchemaName = st.nextToken().replaceAll("\\\"", "");
 								customTypeName = st.nextToken().replaceAll("\\\"", "");
 							}
+							if (customTypeName.startsWith("_")) {
+								attribute.setArray(true);
+								customTypeName = customTypeName.substring(1);
+							}
 							for (int i = 0; i < customTypes.size(); i++) {
 								if (customTypes.get(i).getSchema().equals(customTypeSchemaName)
 										&& customTypes.get(i).getName().equals(customTypeName)) {
@@ -268,7 +307,30 @@ public class DatabaseHelper {
 							}
 							if (attribute.getCustomType() == null) {
 								attribute.setType(CustomTypeAttributeType.TEXT);
-								attribute.setEnumType(columnTypeName);
+								for (int i = 0; i < enumTypes.size(); i++) {
+									if (enumTypes.get(i).getSchema().equals(customTypeSchemaName)
+											&& enumTypes.get(i).getName().equals(customTypeName)) {
+										attribute.setEnumType(enumTypes.get(i));
+										break;
+									}
+								}
+								if (attribute.getEnumType() == null) {
+									EnumType enumType = dataFactory.createEnumType();
+									enumType.eSetContainer(database);
+									enumTypes.add(enumType);
+									enumType.setSchema(customTypeSchemaName);
+									enumType.setName(customTypeName);
+									enumType.setDocumentation("Model generated from Type '" + customTypeName + "'");
+									PreparedStatement rangePs = connection.prepareStatement("SELECT enum_range(NULL::\"" + customTypeSchemaName + "\".\"" + customTypeName + "\")");
+									ResultSet values = rangePs.executeQuery();
+									if (values.next()) {
+										Object[] stringValues = (Object[]) ((org.postgresql.jdbc.PgArray) values.getArray("enum_range")).getArray();										
+										for (int i = 0; i < stringValues.length; i++) {
+											enumType.getValues().add(stringValues[i].toString());
+										}
+									}
+									attribute.setEnumType(enumType);
+								}
 							}
 						}
 						attribute.setArray(Helper.isArray(columnTypeName));
@@ -283,13 +345,6 @@ public class DatabaseHelper {
 			
 			// Get tables
 			for (String schemaName : schemaNames) {
-				
-				rs = dbmd.getTableTypes();
-				while (rs.next()) {
-					System.out.println(rs.getString(1));
-				}
-				
-				
 				rs = dbmd.getTables(catalogName, schemaName, null, new String[] {
 						"TABLE",
 						"FOREIGN TABLE",
@@ -314,6 +369,9 @@ public class DatabaseHelper {
 						String columnName = (String) columnsRs.getObject("COLUMN_NAME");
 						String columnRemarks = (String) columnsRs.getObject("REMARKS");
 						String columnTypeName = (String) columnsRs.getObject("TYPE_NAME");
+						if (domainToTypeMap.get(columnTypeName) != null) {
+							columnTypeName = domainToTypeMap.get(columnTypeName);
+						}
 						Integer columnSize = (Integer) columnsRs.getObject("COLUMN_SIZE");
 						Integer decimalDigits = (Integer) columnsRs.getObject("DECIMAL_DIGITS");
 						Integer nullable = (Integer) columnsRs.getObject("NULLABLE");
@@ -327,6 +385,7 @@ public class DatabaseHelper {
 						attribute.setName(columnName);
 						attribute.setName(columnName);
 						attribute.setDocumentation(columnRemarks == null ? "Model generated from Column '" + columnName + "'" : columnRemarks);
+
 						attribute.setType(Helper.getEntityAttributeType(columnTypeName, isAutoincrement));
 						if (attribute.getType() == EntityAttributeType.CUSTOM_TYPE) {
 							attribute.setCustomType(null);
@@ -337,6 +396,11 @@ public class DatabaseHelper {
 								customTypeSchemaName = st.nextToken().replaceAll("\\\"", "");
 								customTypeName = st.nextToken().replaceAll("\\\"", "");
 							}
+							if (customTypeName.startsWith("_")) {
+								attribute.setArray(true);
+								customTypeName = customTypeName.substring(1);
+							}
+							
 							for (int i = 0; i < customTypes.size(); i++) {
 								if (customTypes.get(i).getSchema().equals(customTypeSchemaName)
 										&& customTypes.get(i).getName().equals(customTypeName)) {
@@ -346,7 +410,30 @@ public class DatabaseHelper {
 							}
 							if (attribute.getCustomType() == null) {
 								attribute.setType(EntityAttributeType.TEXT);
-								attribute.setEnumType(columnTypeName);
+								for (int i = 0; i < enumTypes.size(); i++) {
+									if (enumTypes.get(i).getSchema().equals(customTypeSchemaName)
+											&& enumTypes.get(i).getName().equals(customTypeName)) {
+										attribute.setEnumType(enumTypes.get(i));
+										break;
+									}
+								}
+								if (attribute.getEnumType() == null) {
+									EnumType enumType = dataFactory.createEnumType();
+									enumType.eSetContainer(database);
+									enumTypes.add(enumType);
+									enumType.setSchema(customTypeSchemaName);
+									enumType.setName(customTypeName);
+									enumType.setDocumentation("Model generated from Type '" + customTypeName + "'");
+									PreparedStatement rangePs = connection.prepareStatement("SELECT enum_range(NULL::\"" + customTypeSchemaName + "\".\"" + customTypeName + "\")");
+									ResultSet values = rangePs.executeQuery();
+									if (values.next()) {
+										Object[] stringValues = (Object[]) ((org.postgresql.jdbc.PgArray) values.getArray("enum_range")).getArray();										
+										for (int i = 0; i < stringValues.length; i++) {
+											enumType.getValues().add(stringValues[i].toString());
+										}
+									}
+									attribute.setEnumType(enumType);
+								}
 							}
 						}
 						attribute.setArray(Helper.isArray(columnTypeName));

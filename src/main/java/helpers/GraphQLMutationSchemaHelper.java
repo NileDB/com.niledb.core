@@ -63,6 +63,15 @@ public class GraphQLMutationSchemaHelper {
 			if (attribute.isArray()) {
 				switch (attribute.getType().getValue()) {
 					case CustomTypeAttributeType.TEXT_VALUE:
+						if (attribute.getEnumType() != null) {
+							fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
+									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
+						}
+						else {
+							fieldDefinition.type(GraphQLList.list(GraphQLString));
+						}
+						break;
+
 					case CustomTypeAttributeType.DATE_VALUE:
 					case CustomTypeAttributeType.TIMESTAMP_VALUE:
 					case CustomTypeAttributeType.BYTEA_VALUE:
@@ -105,6 +114,15 @@ public class GraphQLMutationSchemaHelper {
 			else {
 				switch (attribute.getType().getValue()) {
 					case CustomTypeAttributeType.TEXT_VALUE:
+						if (attribute.getEnumType() != null) {
+							fieldDefinition.type(GraphQLTypeReference
+									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"));
+						}
+						else {
+							fieldDefinition.type(GraphQLString);
+						}
+						break;
+	
 					case CustomTypeAttributeType.DATE_VALUE:
 					case CustomTypeAttributeType.TIMESTAMP_VALUE:
 					case CustomTypeAttributeType.BYTEA_VALUE:
@@ -178,6 +196,26 @@ public class GraphQLMutationSchemaHelper {
 			if (attribute.isArray()) {
 				switch (attribute.getType().getValue()) {
 					case EntityAttributeType.TEXT_VALUE:
+						if (attribute.isRequired() && attribute.getDefaultValue() == null) {
+							if (attribute.getEnumType() != null) {
+								fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLTypeReference
+										.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"))));
+							}
+							else {
+								fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLString)));
+							}
+						}
+						else {
+							if (attribute.getEnumType() != null) {
+								fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
+										.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
+							}
+							else {
+								fieldDefinition.type(GraphQLList.list(GraphQLString));
+							}
+						}
+						break;
+						
 					case EntityAttributeType.DATE_VALUE:
 					case EntityAttributeType.TIMESTAMP_VALUE:
 					case EntityAttributeType.BYTEA_VALUE:
@@ -257,6 +295,26 @@ public class GraphQLMutationSchemaHelper {
 			else {
 				switch (attribute.getType().getValue()) {
 					case EntityAttributeType.TEXT_VALUE:
+						if (attribute.isRequired() && attribute.getDefaultValue() == null) {
+							if (attribute.getEnumType() != null) {
+								fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLTypeReference
+										.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
+							}
+							else {
+								fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLString));
+							}
+						}
+						else {
+							if (attribute.getEnumType() != null) {
+								fieldDefinition.type(GraphQLTypeReference
+										.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"));
+							}
+							else {
+								fieldDefinition.type(GraphQLString);
+							}
+						}
+						break;
+						
 					case EntityAttributeType.DATE_VALUE:
 					case EntityAttributeType.TIMESTAMP_VALUE:
 					case EntityAttributeType.BYTEA_VALUE:
@@ -367,6 +425,15 @@ public class GraphQLMutationSchemaHelper {
 			if (attribute.isArray()) {
 				switch (attribute.getType().getValue()) {
 					case EntityAttributeType.TEXT_VALUE:
+						if (attribute.getEnumType() != null) {
+							fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
+									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
+						}
+						else {
+							fieldDefinition.type(GraphQLList.list(GraphQLString));
+						}
+						break;
+
 					case EntityAttributeType.DATE_VALUE:
 					case EntityAttributeType.TIMESTAMP_VALUE:
 					case EntityAttributeType.BYTEA_VALUE:
@@ -415,6 +482,15 @@ public class GraphQLMutationSchemaHelper {
 			else {
 				switch (attribute.getType().getValue()) {
 					case EntityAttributeType.TEXT_VALUE:
+						if (attribute.getEnumType() != null) {
+							fieldDefinition.type(GraphQLTypeReference
+									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"));
+						}
+						else {
+							fieldDefinition.type(GraphQLString);
+						}
+						break;
+	
 					case EntityAttributeType.DATE_VALUE:
 					case EntityAttributeType.TIMESTAMP_VALUE:
 					case EntityAttributeType.BYTEA_VALUE:

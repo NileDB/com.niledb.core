@@ -28,6 +28,8 @@ public interface DataFactory {
 	EntityReference createEntityReference();
 
 	CustomType createCustomType();
+	
+	EnumType createEnumType();
 
 	CustomTypeAttribute createCustomTypeAttribute();
 

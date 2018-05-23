@@ -15,43 +15,23 @@
  */
 package data;
 
-public interface CustomTypeAttribute {
+import java.util.List;
 
-	void eSetContainer(CustomType eContainer);
+public interface EnumType {
 
-	CustomType eContainer();
+	void eSetContainer(Database eContainer);
+
+	Database eContainer();
+	
+	String getSchema();
+	
+	void setSchema(String schema);
 
 	String getName();
 
 	void setName(String value);
 
-	CustomTypeAttributeType getType();
-
-	void setType(CustomTypeAttributeType value);
-
-	boolean isArray();
-
-	void setArray(boolean value);
-
-	CustomType getCustomType();
-
-	void setCustomType(CustomType value);
-
-	EnumType getEnumType();
-
-	void setEnumType(EnumType value);
-
-	int getLength();
-
-	void setLength(int value);
-
-	int getPrecision();
-
-	void setPrecision(int value);
-
-	int getScale();
-
-	void setScale(int value);
+	List<String> getValues();
 
 	String getDocumentation();
 

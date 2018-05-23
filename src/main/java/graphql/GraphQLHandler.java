@@ -43,6 +43,7 @@ import data.Database;
 import data.Entity;
 import data.EntityAttribute;
 import data.EntityReference;
+import data.EnumType;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -219,6 +220,23 @@ public class GraphQLHandler {
 				customTypeMap.attributes.put(customTypeAttribute.getName(), customTypeAttribute);
 			}
 			SchemaMap.customTypes.put(customType.getSchema() + "." + customType.getName(), customTypeMap);
+		}
+
+		// Get EnumTypes
+		logger.info("Adding enum types...");
+		for (int i = 0; i < database.getEnumTypes().size(); i++) {
+			EnumType enumType = database.getEnumTypes().get(i);
+
+			System.out.println("!!!!: " + ((multiSchema ? Helper.toFirstUpper(enumType.getSchema()) + "_" : "") + Helper.toFirstUpper(enumType.getName()) + "EnumType"));
+			
+			GraphQLEnumType.Builder builder = newEnum()
+				.name((multiSchema ? Helper.toFirstUpper(enumType.getSchema()) + "_" : "") + Helper.toFirstUpper(enumType.getName()) + "EnumType")
+				.description(enumType.getDocumentation());
+			
+			for (int j = 0; j < enumType.getValues().size(); j++) {
+				builder.value(enumType.getValues().get(j));
+			}
+			additionalTypes.add(builder.build());
 		}
 		
 		// Several additional types

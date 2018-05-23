@@ -28,6 +28,8 @@ public interface Database {
 	List<Entity> getEntities();
 	
 	List<CustomType> getCustomTypes();
+
+	List<EnumType> getEnumTypes();
 	
 	String getDocumentation();
 	
