@@ -381,7 +381,7 @@ public class GraphQLHandler {
 								StringBuffer sb = new StringBuffer()
 												.append(sqlInsertCommand);
 								
-								logger.info(sb.toString());
+								logger.debug(sb.toString());
 								
 								PreparedStatement ps = connection.prepareStatement(sb.toString());
 								for (int j = 0; j < sqlInsertCommand.values.size(); j++) {
