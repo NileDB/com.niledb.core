@@ -37,6 +37,7 @@ import graphql.language.Field;
 import graphql.language.ObjectField;
 import graphql.language.Selection;
 import graphql.language.StringValue;
+import graphql.language.Value;
 import graphql.schema.DataFetchingEnvironment;
 import helpers.maps.EntityMap;
 import helpers.maps.SchemaMap;
@@ -58,25 +59,10 @@ public class GraphQLSqlUpdateHelper {
 			String fieldName = objectField.getName();
 			Object fieldValue = (Object) Helper.resolveValue(objectField.getValue(), environment);
 			
-			if (fieldValue == null) {
-				sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"";
-				sqlCommand.values.add(null);
-				sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-				attributeCount++;
-			}
-			else if (fieldValue instanceof Integer) {
-				sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"";
-				sqlCommand.values.add(fieldValue);
-				sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-				attributeCount++;
-			}
-			else if (fieldValue instanceof Double) {
-				sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"";
-				sqlCommand.values.add(fieldValue);
-				sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-				attributeCount++;
-			}
-			else if (fieldValue instanceof Boolean) {
+			if (fieldValue == null
+					|| fieldValue instanceof Integer
+					|| fieldValue instanceof Double
+					|| fieldValue instanceof Boolean) {
 				sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"";
 				sqlCommand.values.add(fieldValue);
 				sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
@@ -138,12 +124,26 @@ public class GraphQLSqlUpdateHelper {
 				}
 				attributeCount++;
 			}
-			else if (fieldValue instanceof Object) {
-				SqlUpdateCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, SchemaMap.customTypes.get(type.getSchema() + "." + type.getName()).attributes.get(fieldName).getCustomType(), relativePath + ".\"" + fieldName + "\"", environment);
-				sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
-				sqlCommand.values.addAll(customTypeSqlCommand.values);
-				sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.valuePlaceholders;
-				attributeCount++;
+			else if (fieldValue instanceof List) {
+				if (((List) fieldValue).size() > 0) {
+					if (((List) fieldValue).get(0) instanceof Value) {
+						CustomTypeAttribute attribute = SchemaMap.customTypes.get(type.getSchema() + "." + type.getName()).attributes.get(fieldName);
+						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"";
+						String[] values = new String[((List) fieldValue).size()];
+						for (int k = 0; k < values.length; k++) {
+							values[k] = ((StringValue) ((List) fieldValue).get(k)).getValue();
+						}
+						sqlCommand.values.add(values);
+						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"" : "");
+					}
+					else { // instanceof ObjectField
+						SqlUpdateCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, SchemaMap.customTypes.get(type.getSchema() + "." + type.getName()).attributes.get(fieldName).getCustomType(), relativePath + ".\"" + fieldName + "\"", environment);
+						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
+						sqlCommand.values.addAll(customTypeSqlCommand.values);
+						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.valuePlaceholders;
+					}
+					attributeCount++;
+				}
 			}
 		}
 		return sqlCommand;
@@ -170,25 +170,10 @@ public class GraphQLSqlUpdateHelper {
 					String fieldName = objectField.getName();
 					Object fieldValue = Helper.resolveValue(objectField.getValue(), environment);
 					
-					if (fieldValue == null) {
-						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-						sqlCommand.values.add(null);
-						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-						attributeCount++;
-					}
-					else if (fieldValue instanceof Integer) {
-						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-						sqlCommand.values.add(fieldValue);
-						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-						attributeCount++;
-					}
-					else if (fieldValue instanceof Double) {
-						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-						sqlCommand.values.add(fieldValue);
-						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-						attributeCount++;
-					}
-					else if (fieldValue instanceof Boolean) {
+					if (fieldValue == null
+							|| fieldValue instanceof Integer
+							|| fieldValue instanceof Double
+							|| fieldValue instanceof Boolean) {
 						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
 						sqlCommand.values.add(fieldValue);
 						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
@@ -251,55 +236,9 @@ public class GraphQLSqlUpdateHelper {
 						attributeCount++;
 					}
 					else if (fieldValue instanceof List) {
-						EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
-						EntityAttributeType attributeType = attribute.getType();
-						switch (attributeType.getValue()) {
-							case EntityAttributeType.BYTEA_VALUE:
-								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-								sqlCommand.values.add(((String) fieldValue).getBytes());
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-								break;
-							case EntityAttributeType.DATE_VALUE:
-								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-								sqlCommand.values.add(new Timestamp(DateUtils.parseDate(((String) fieldValue), new String[] {"yyyy-MM-dd"}).getTime()));
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-								break;
-							case EntityAttributeType.TIME_VALUE:
-								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-								sqlCommand.values.add(new Timestamp(DateUtils.parseDate(((String) fieldValue), new String[] {"HH:mm", "HH:mm:ss", "HH:mm:ss.SSS"}).getTime()));
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-								break;
-							case EntityAttributeType.TIME_WITH_TIME_ZONE_VALUE:
-								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-								sqlCommand.values.add(new Timestamp(DateUtils.parseDate(((String) fieldValue), new String[] {"HH:mm", "HH:mm:ss", "HH:mm:ss.SSS", "HH:mmX", "HH:mm:ssX", "HH:mm:ss.SSSX"}).getTime()));
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-								break;
-							case EntityAttributeType.TIMESTAMP_VALUE:
-								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-								sqlCommand.values.add(new Timestamp(DateUtils.parseDate(((String) fieldValue), new String[] {"yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.SSS"}).getTime()));
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-								break;
-							case EntityAttributeType.TIMESTAMP_WITH_TIME_ZONE_VALUE:
-								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-								sqlCommand.values.add(new Timestamp(DateUtils.parseDate(((String) fieldValue), new String[] {"yyyy-MM-dd'T'HH:mm", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mmX", "yyyy-MM-dd'T'HH:mm:ssX", "yyyy-MM-dd'T'HH:mm:ss.SSSX"}).getTime()));
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-								break;
-							case EntityAttributeType.INTERVAL_VALUE:
-								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-								sqlCommand.values.add(new PGInterval(((String) fieldValue)));
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-								break;
-							case EntityAttributeType.MONEY_VALUE:
-								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-								sqlCommand.values.add(new PGmoney(((String) fieldValue)));
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-								break;
-							case EntityAttributeType.POINT_VALUE:
-								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-								sqlCommand.values.add(new PGpoint(((String) fieldValue)));
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
-								break;
-							default:
+						if (((List) fieldValue).size() > 0) {
+							if (((List) fieldValue).get(0) instanceof Value) {
+								EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
 								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
 								String[] values = new String[((List) fieldValue).size()];
 								for (int k = 0; k < values.length; k++) {
@@ -307,16 +246,16 @@ public class GraphQLSqlUpdateHelper {
 								}
 								sqlCommand.values.add(values);
 								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"" : "");
+							}
+							else { // instanceof ObjectField
+								EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
+								SqlUpdateCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, attribute.getCustomType(), "\"" + fieldName + "\"", environment);
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
+								sqlCommand.values.addAll(customTypeSqlCommand.values);
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.valuePlaceholders;
+							}
+							attributeCount++;
 						}
-						attributeCount++;
-					}
-					else if (fieldValue instanceof Object) {
-						EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
-						SqlUpdateCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, attribute.getCustomType(), "\"" + fieldName + "\"", environment);
-						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
-						sqlCommand.values.addAll(customTypeSqlCommand.values);
-						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.valuePlaceholders;
-						attributeCount++;
 					}
 				}
 			}
