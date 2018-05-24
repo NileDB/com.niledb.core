@@ -33,6 +33,7 @@ import data.Entity;
 import data.EntityAttribute;
 import data.EntityAttributeType;
 import graphql.language.Argument;
+import graphql.language.EnumValue;
 import graphql.language.Field;
 import graphql.language.ObjectField;
 import graphql.language.Selection;
@@ -131,10 +132,16 @@ public class GraphQLSqlInsertHelper {
 						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"";
 						String[] values = new String[((List) fieldValue).size()];
 						for (int k = 0; k < values.length; k++) {
-							values[k] = ((StringValue) ((List) fieldValue).get(k)).getValue();
+							Object value = ((List) fieldValue).get(k);
+							if (value instanceof EnumValue) {
+								values[k] = ((EnumValue) value).getName();
+							}
+							else {  // TODO StringValue or others (implement these cases when necessary)
+								values[k] = ((StringValue) value).getValue();
+							}
 						}
 						sqlCommand.values.add(values);
-						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"" : "");
+						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"[]" : "");
 					}
 					else { // instanceof ObjectField
 						SqlInsertCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, SchemaMap.customTypes.get(type.getSchema() + "." + type.getName()).attributes.get(fieldName).getCustomType(), relativePath + ".\"" + fieldName + "\"", environment);
@@ -239,10 +246,16 @@ public class GraphQLSqlInsertHelper {
 								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
 								String[] values = new String[((List) fieldValue).size()];
 								for (int k = 0; k < values.length; k++) {
-									values[k] = ((StringValue) ((List) fieldValue).get(k)).getValue();
+									Object value = ((List) fieldValue).get(k);
+									if (value instanceof EnumValue) {
+										values[k] = ((EnumValue) value).getName();
+									}
+									else {  // TODO StringValue or others (implement these cases when necessary)
+										values[k] = ((StringValue) value).getValue();
+									}
 								}
 								sqlCommand.values.add(values);
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"" : "");
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"[]" : "");
 							}
 							else { // instanceof ObjectField
 								EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);

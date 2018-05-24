@@ -282,7 +282,7 @@ public class DatabaseHelper {
 						attributes.add(attribute);
 						
 						attribute.setName(columnName);
-						attribute.setName(columnName);
+						attribute.setArray(Helper.isArray(columnTypeName));
 						attribute.setDocumentation(columnRemarks == null ? "Model generated from Column '" + columnName + "'" : columnRemarks);
 						attribute.setType(Helper.getCustomTypeAttributeType(columnTypeName));
 						if (attribute.getType() == CustomTypeAttributeType.CUSTOM_TYPE) {
@@ -333,7 +333,6 @@ public class DatabaseHelper {
 								}
 							}
 						}
-						attribute.setArray(Helper.isArray(columnTypeName));
 						attribute.setLength(columnSize);
 						attribute.setPrecision(columnSize);
 						attribute.setScale(decimalDigits);
@@ -381,11 +380,10 @@ public class DatabaseHelper {
 						EntityAttribute attribute = dataFactory.createEntityAttribute();
 						attribute.eSetContainer(entity);
 						attributes.add(attribute);
-						
-						attribute.setName(columnName);
-						attribute.setName(columnName);
-						attribute.setDocumentation(columnRemarks == null ? "Model generated from Column '" + columnName + "'" : columnRemarks);
 
+						attribute.setName(columnName);
+						attribute.setArray(Helper.isArray(columnTypeName));
+						attribute.setDocumentation(columnRemarks == null ? "Model generated from Column '" + columnName + "'" : columnRemarks);
 						attribute.setType(Helper.getEntityAttributeType(columnTypeName, isAutoincrement));
 						if (attribute.getType() == EntityAttributeType.CUSTOM_TYPE) {
 							attribute.setCustomType(null);
@@ -400,7 +398,6 @@ public class DatabaseHelper {
 								attribute.setArray(true);
 								customTypeName = customTypeName.substring(1);
 							}
-							
 							for (int i = 0; i < customTypes.size(); i++) {
 								if (customTypes.get(i).getSchema().equals(customTypeSchemaName)
 										&& customTypes.get(i).getName().equals(customTypeName)) {
@@ -436,7 +433,6 @@ public class DatabaseHelper {
 								}
 							}
 						}
-						attribute.setArray(Helper.isArray(columnTypeName));
 						attribute.setDefaultValue(columnDefault);
 						attribute.setLength(columnSize);
 						attribute.setPrecision(columnSize);
