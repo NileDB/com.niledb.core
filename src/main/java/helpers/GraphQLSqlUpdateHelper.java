@@ -33,8 +33,10 @@ import data.Entity;
 import data.EntityAttribute;
 import data.EntityAttributeType;
 import graphql.language.Argument;
+import graphql.language.EnumValue;
 import graphql.language.Field;
 import graphql.language.ObjectField;
+import graphql.language.ObjectValue;
 import graphql.language.Selection;
 import graphql.language.StringValue;
 import graphql.language.Value;
@@ -128,21 +130,36 @@ public class GraphQLSqlUpdateHelper {
 				if (((List) fieldValue).size() > 0) {
 					if (((List) fieldValue).get(0) instanceof Value) {
 						CustomTypeAttribute attribute = SchemaMap.customTypes.get(type.getSchema() + "." + type.getName()).attributes.get(fieldName);
-						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"";
-						String[] values = new String[((List) fieldValue).size()];
-						for (int k = 0; k < values.length; k++) {
-							values[k] = ((StringValue) ((List) fieldValue).get(k)).getValue();
+						for (int k = 0; k < ((List) fieldValue).size(); k++) {
+							Object value = ((List) fieldValue).get(k);
+							if (value instanceof EnumValue) {
+								sqlCommand.values.add(((EnumValue) value).getName());
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"[" + (k + 1) + "]";
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								attributeCount++;
+							}
+							else if (value instanceof ObjectValue) {
+								SqlUpdateCommand customTypeSqlCommand = getCommand(((ObjectValue) value).getObjectFields(), attribute.getCustomType(), "\"" + fieldName + "\"[" + (k + 1) + "]", environment);
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
+								sqlCommand.values.addAll(customTypeSqlCommand.values);
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.valuePlaceholders;
+								attributeCount++;
+							}
+							else {  // TODO StringValue or others (implement these cases when necessary)
+								sqlCommand.values.add(((StringValue) value).getValue());
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + relativePath + ".\"" + fieldName + "\"[" + (k + 1) + "]";
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+								attributeCount++;
+							}
 						}
-						sqlCommand.values.add(values);
-						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"" : "");
 					}
 					else { // instanceof ObjectField
 						SqlUpdateCommand customTypeSqlCommand = getCommand((List<ObjectField>) fieldValue, SchemaMap.customTypes.get(type.getSchema() + "." + type.getName()).attributes.get(fieldName).getCustomType(), relativePath + ".\"" + fieldName + "\"", environment);
 						sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
 						sqlCommand.values.addAll(customTypeSqlCommand.values);
 						sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.valuePlaceholders;
+						attributeCount++;
 					}
-					attributeCount++;
 				}
 			}
 		}
@@ -239,13 +256,28 @@ public class GraphQLSqlUpdateHelper {
 						if (((List) fieldValue).size() > 0) {
 							if (((List) fieldValue).get(0) instanceof Value) {
 								EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
-								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
-								String[] values = new String[((List) fieldValue).size()];
-								for (int k = 0; k < values.length; k++) {
-									values[k] = ((StringValue) ((List) fieldValue).get(k)).getValue();
+								for (int k = 0; k < ((List) fieldValue).size(); k++) {
+									Object value = ((List) fieldValue).get(k);
+									if (value instanceof EnumValue) {
+										sqlCommand.values.add(((EnumValue) value).getName());
+										sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"[" + (k + 1) + "]";
+										sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+										attributeCount++;
+									}
+									else if (value instanceof ObjectValue) {
+										SqlUpdateCommand customTypeSqlCommand = getCommand(((ObjectValue) value).getObjectFields(), attribute.getCustomType(), "\"" + fieldName + "\"[" + (k + 1) + "]", environment);
+										sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
+										sqlCommand.values.addAll(customTypeSqlCommand.values);
+										sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.valuePlaceholders;
+										attributeCount++;
+									}
+									else {  // TODO StringValue or others (implement these cases when necessary)
+										sqlCommand.values.add(((StringValue) value).getValue());
+										sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"[" + (k + 1) + "]";
+										sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?";
+										attributeCount++;
+									}
 								}
-								sqlCommand.values.add(values);
-								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?" + (attribute.getEnumType() != null ? "::\"" + attribute.getEnumType().getSchema() + "\".\"" + attribute.getEnumType().getName() + "\"" : "");
 							}
 							else { // instanceof ObjectField
 								EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
@@ -253,8 +285,8 @@ public class GraphQLSqlUpdateHelper {
 								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.attributes;
 								sqlCommand.values.addAll(customTypeSqlCommand.values);
 								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + customTypeSqlCommand.valuePlaceholders;
+								attributeCount++;
 							}
-							attributeCount++;
 						}
 					}
 				}
