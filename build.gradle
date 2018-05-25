@@ -14,6 +14,12 @@ sourceSets {
 			srcDirs = ['src/main/resources']
 		}
 	}
+    test {
+        resources {
+            srcDir file('src/test/java')
+            exclude '**/*.java'
+        }
+    }
 }
 
 repositories {
@@ -33,16 +39,17 @@ def watchForChange = 'src/**/*'
 def doOnChange = './gradlew classes'
 
 dependencies {
+	compile "net.minidev:json-smart:2.3"
 	compile "io.vertx:vertx-core:$vertxVersion"
 	compile "io.vertx:vertx-web:$vertxVersion"
 	compile "io.vertx:vertx-mqtt:$vertxVersion"
 	compile "io.vertx:vertx-hazelcast:$vertxVersion"
-	compile "com.graphql-java:graphql-java:7.0"
+	compile "com.graphql-java:graphql-java:8.0"
 	compile "commons-io:commons-io:2.6"
-	compile "org.postgresql:postgresql:42.2.1"
+	compile "org.postgresql:postgresql:42.2.2"
 	compile "org.apache.commons:commons-lang3:3.7"
-	compile "com.zaxxer:HikariCP:2.7.8"
-	compile "com.nimbusds:oauth2-oidc-sdk:5.56"
+	compile "com.zaxxer:HikariCP:3.1.0"
+	compile "com.nimbusds:oauth2-oidc-sdk:5.62"
 
 	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1')
 	//compile('edu.stanford.nlp:stanford-corenlp:3.9.1:models')
@@ -56,6 +63,9 @@ dependencies {
 	
 	testCompile "junit:junit:4.12"
 	testCompile "io.vertx:vertx-unit:$vertxVersion"
+	
+	testCompile "com.intuit.karate:karate-junit4:0.7.0.2"
+	testCompile "com.intuit.karate:karate-apache:0.7.0.2"
 }
 
 shadowJar {
@@ -66,6 +76,12 @@ shadowJar {
 	mergeServiceFiles {
 		include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
 	}
+}
+
+test {
+	systemProperty "cucumber.options", System.properties.getProperty("cucumber.options")
+	systemProperty "karate.env", System.properties.getProperty("karate.env")
+	outputs.upToDateWhen { false }
 }
 
 run {
