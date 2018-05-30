@@ -25,9 +25,9 @@
 	"db.replica.port": 5433,
 	
 	"db.username": "postgres",
-	"db.password": "postgres",
+	"db.password": "Ficesa1234!",
 	
-	"security.enabled": false,
+	"security.enabled": true,
 	"security.anonymous.rolename": "anonymous",
 	"security.jwt.secret": "password_of_at_least_32_characters",
 	
