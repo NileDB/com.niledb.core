@@ -1,19 +1,4 @@
-DROP TABLE IF EXISTS "Models"."EntityKeyEntityAttribute";
-DROP TABLE IF EXISTS "Models"."EntityReferenceEntityAttribute";
-DROP TABLE IF EXISTS "Models"."EntityReference";
-DROP TABLE IF EXISTS "Models"."EntityKey";
-DROP TABLE IF EXISTS "Models"."EntityAttribute";
-DROP TABLE IF EXISTS "Models"."CustomTypeAttribute";
-DROP TABLE IF EXISTS "Models"."CustomType";
-DROP TABLE IF EXISTS "Models"."Entity";
-DROP TABLE IF EXISTS "Models"."EnumType";
-DROP TABLE IF EXISTS "Models"."Schema";
-
-DROP TYPE IF EXISTS "Models"."customTypeAttributeType";
-DROP TYPE IF EXISTS "Models"."entityAttributeType";
-DROP TYPE IF EXISTS "Models"."entityType";
-
-DROP SCHEMA IF EXISTS "Models";
+DROP SCHEMA IF EXISTS "Models" CASCADE;
 
 CREATE SCHEMA IF NOT EXISTS "Models";
 SET search_path TO "Models";
@@ -78,6 +63,8 @@ CREATE TABLE "Models"."Schema" (
 	"timestamp" timestamp DEFAULT now()
 );
 
+CREATE UNIQUE INDEX ON "Models"."Schema"("name");
+
 CREATE TABLE "Models"."CustomType" (
 	"id" serial PRIMARY KEY,
 	"eContainer" int,
@@ -85,6 +72,8 @@ CREATE TABLE "Models"."CustomType" (
 	"documentation" text,
 	"timestamp" timestamp DEFAULT now()
 );
+
+CREATE UNIQUE INDEX ON "Models"."CustomType"("eContainer", "name");
 
 CREATE TABLE "Models"."CustomTypeAttribute" (
 	"id" serial PRIMARY KEY,
@@ -101,6 +90,8 @@ CREATE TABLE "Models"."CustomTypeAttribute" (
 	"timestamp" timestamp DEFAULT now()
 );
 
+CREATE UNIQUE INDEX ON "Models"."CustomTypeAttribute"("eContainer", "name");
+
 CREATE TABLE "Models"."Entity" (
 	"id" serial PRIMARY KEY,
 	"eContainer" int,
@@ -109,6 +100,8 @@ CREATE TABLE "Models"."Entity" (
 	"documentation" text,
 	"timestamp" timestamp DEFAULT now()
 );
+
+CREATE UNIQUE INDEX ON "Models"."Entity"("eContainer", "name");
 
 CREATE TABLE "Models"."EntityAttribute" (
 	"id" serial PRIMARY KEY,
@@ -127,6 +120,8 @@ CREATE TABLE "Models"."EntityAttribute" (
 	"timestamp" timestamp DEFAULT now()
 );
 
+CREATE UNIQUE INDEX ON "Models"."EntityAttribute"("eContainer", "name");
+
 CREATE TABLE "Models"."EntityKey" (
 	"id" serial PRIMARY KEY,
 	"eContainer" int,
@@ -137,12 +132,16 @@ CREATE TABLE "Models"."EntityKey" (
 	"timestamp" timestamp DEFAULT now()
 );
 
+CREATE UNIQUE INDEX ON "Models"."EntityKey"("eContainer", "name");
+
 CREATE TABLE "Models"."EntityKeyEntityAttribute" (
 	"id" serial PRIMARY KEY,
 	"eContainer" int,
 	"entityAttribute" int,
 	"timestamp" timestamp DEFAULT now()
 );
+
+CREATE UNIQUE INDEX ON "Models"."EntityKeyEntityAttribute"("eContainer", "entityAttribute");
 
 CREATE TABLE "Models"."EntityReference" (
 	"id" serial PRIMARY KEY,
@@ -153,12 +152,16 @@ CREATE TABLE "Models"."EntityReference" (
 	"timestamp" timestamp DEFAULT now()
 );
 
+CREATE UNIQUE INDEX ON "Models"."EntityReference"("eContainer", "name");
+
 CREATE TABLE "Models"."EntityReferenceEntityAttribute" (
 	"id" serial PRIMARY KEY,
 	"eContainer" int,
 	"entityAttribute" int,
 	"timestamp" timestamp DEFAULT now()
 );
+
+CREATE UNIQUE INDEX ON "Models"."EntityReferenceEntityAttribute"("eContainer", "entityAttribute");
 
 CREATE TABLE "Models"."EnumType" (
 	"id" serial PRIMARY KEY,
@@ -168,6 +171,8 @@ CREATE TABLE "Models"."EnumType" (
 	"documentation" text,
 	"timestamp" timestamp DEFAULT now()
 );
+
+CREATE UNIQUE INDEX ON "Models"."EnumType"("eContainer", "name");
 
 ALTER TABLE "Models"."CustomType" ADD CONSTRAINT "eContainer" FOREIGN KEY ("eContainer") REFERENCES "Models"."Schema"("id");
 ALTER TABLE "Models"."CustomTypeAttribute" ADD CONSTRAINT "eContainer" FOREIGN KEY ("eContainer") REFERENCES "Models"."CustomType"("id");
@@ -185,3 +190,46 @@ ALTER TABLE "Models"."EntityAttribute" ADD CONSTRAINT "enumType" FOREIGN KEY ("e
 ALTER TABLE "Models"."EntityKeyEntityAttribute" ADD CONSTRAINT "entityAttribute" FOREIGN KEY ("entityAttribute") REFERENCES "Models"."EntityAttribute"("id");
 ALTER TABLE "Models"."EntityReference" ADD CONSTRAINT "referencedKey" FOREIGN KEY ("referencedKey") REFERENCES "Models"."EntityKey"("id");
 ALTER TABLE "Models"."EntityReferenceEntityAttribute" ADD CONSTRAINT "entityAttribute" FOREIGN KEY ("entityAttribute") REFERENCES "Models"."EntityAttribute"("id");
+
+CREATE OR REPLACE FUNCTION "Models"."createSchema"()
+	RETURNS TRIGGER AS $createSchema$
+	DECLARE
+		selectedSchema RECORD;
+	BEGIN
+		EXECUTE 'CREATE SCHEMA IF NOT EXISTS ' || NEW."name";
+		RETURN null;
+	END;
+	$createSchema$ language 'plpgsql';
+
+CREATE TRIGGER "createSchema" 
+	AFTER INSERT ON "Models"."Schema" 
+	FOR EACH ROW 
+	EXECUTE PROCEDURE "Models"."createSchema"();
+
+CREATE OR REPLACE FUNCTION "Models"."deleteSchema"()
+	RETURNS TRIGGER AS $deleteSchema$
+	BEGIN
+		EXECUTE 'DROP SCHEMA IF EXISTS ' || OLD."name" || ' CASCADE';
+		RETURN null;
+	END;
+	$deleteSchema$ language 'plpgsql';
+
+CREATE TRIGGER "deleteSchema" 
+	AFTER DELETE ON "Models"."Schema" 
+	FOR EACH ROW 
+	EXECUTE PROCEDURE "Models"."deleteSchema"();
+
+CREATE OR REPLACE FUNCTION "Models"."updateSchema"()
+	RETURNS TRIGGER AS $updateSchema$
+	DECLARE
+		selectedSchema RECORD;
+	BEGIN
+		EXECUTE 'ALTER SCHEMA ' || OLD."name" || ' RENAME TO ' || NEW."name";
+		RETURN null;
+	END;
+	$updateSchema$ language 'plpgsql';
+
+CREATE TRIGGER "updateSchema" 
+	AFTER UPDATE ON "Models"."Schema" 
+	FOR EACH ROW 
+	EXECUTE PROCEDURE "Models"."updateSchema"();
