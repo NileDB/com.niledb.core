@@ -48,9 +48,9 @@ public class GraphQLMutationSchemaHelper {
 	 *            The custom type
 	 * @return The GraphQL object type
 	 */
-	public static final GraphQLInputObjectType getCustomTypeGraphqlInputObjectType(Database database, CustomType customType, boolean multiSchema) {
+	public static final GraphQLInputObjectType getCustomTypeGraphqlInputObjectType(Database database, CustomType customType) {
 		GraphQLInputObjectType.Builder graphqlObjectType = newInputObject()
-				.name((multiSchema ? Helper.toFirstUpper(customType.getSchema()) + "_" : "") + Helper.toFirstUpper(customType.getName()) + "InputType")
+				.name(Helper.toFirstUpper(customType.getSchema()) + "_" + Helper.toFirstUpper(customType.getName()) + "InputType")
 				.description(customType.getDocumentation());
 		
 		for (int i = 0; i < customType.getAttributes().size(); i++) {
@@ -65,7 +65,7 @@ public class GraphQLMutationSchemaHelper {
 					case CustomTypeAttributeType.TEXT_VALUE:
 						if (attribute.getEnumType() != null) {
 							fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
-									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
+									.typeRef(Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
 						}
 						else {
 							fieldDefinition.type(GraphQLList.list(GraphQLString));
@@ -104,7 +104,7 @@ public class GraphQLMutationSchemaHelper {
 						
 					case CustomTypeAttributeType.CUSTOM_TYPE_VALUE:
 						fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
-								.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
+								.typeRef(Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
 						break;
 						
 					default:
@@ -116,7 +116,7 @@ public class GraphQLMutationSchemaHelper {
 					case CustomTypeAttributeType.TEXT_VALUE:
 						if (attribute.getEnumType() != null) {
 							fieldDefinition.type(GraphQLTypeReference
-									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"));
+									.typeRef(Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"));
 						}
 						else {
 							fieldDefinition.type(GraphQLString);
@@ -155,7 +155,7 @@ public class GraphQLMutationSchemaHelper {
 	
 					case CustomTypeAttributeType.CUSTOM_TYPE_VALUE:
 						fieldDefinition.type(GraphQLTypeReference
-								.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
+								.typeRef(Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
 						break;
 	
 					default:
@@ -176,11 +176,11 @@ public class GraphQLMutationSchemaHelper {
 	 *            The entity
 	 * @return The GraphQL object type
 	 */
-	public static final GraphQLInputObjectType getEntityGraphqlCreateInputObjectType(Database database, Entity entity, boolean multiSchema) {
+	public static final GraphQLInputObjectType getEntityGraphqlCreateInputObjectType(Database database, Entity entity) {
 		
 		// Get Fields
 		GraphQLInputObjectType.Builder graphqlInputObjectType = newInputObject()
-				.name((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "CreateInputType")
+				.name(Helper.toFirstUpper(entity.getSchema()) + "_" + Helper.toFirstUpper(entity.getName()) + "CreateInputType")
 				.description(entity.getDocumentation());
 		
 		EntityMap entityMap = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName());
@@ -199,7 +199,7 @@ public class GraphQLMutationSchemaHelper {
 						if (attribute.isRequired() && attribute.getDefaultValue() == null) {
 							if (attribute.getEnumType() != null) {
 								fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLTypeReference
-										.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"))));
+										.typeRef(Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"))));
 							}
 							else {
 								fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLString)));
@@ -208,7 +208,7 @@ public class GraphQLMutationSchemaHelper {
 						else {
 							if (attribute.getEnumType() != null) {
 								fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
-										.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
+										.typeRef(Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
 							}
 							else {
 								fieldDefinition.type(GraphQLList.list(GraphQLString));
@@ -275,11 +275,11 @@ public class GraphQLMutationSchemaHelper {
 					case EntityAttributeType.CUSTOM_TYPE_VALUE:
 						if (attribute.isRequired() && attribute.getDefaultValue() == null) {
 							fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLTypeReference
-									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"))));
+									.typeRef(Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"))));
 						}
 						else {
 							fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
-									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
+									.typeRef(Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
 						}
 						break;
 						
@@ -298,7 +298,7 @@ public class GraphQLMutationSchemaHelper {
 						if (attribute.isRequired() && attribute.getDefaultValue() == null) {
 							if (attribute.getEnumType() != null) {
 								fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLTypeReference
-										.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
+										.typeRef(Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
 							}
 							else {
 								fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLString));
@@ -307,7 +307,7 @@ public class GraphQLMutationSchemaHelper {
 						else {
 							if (attribute.getEnumType() != null) {
 								fieldDefinition.type(GraphQLTypeReference
-										.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"));
+										.typeRef(Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"));
 							}
 							else {
 								fieldDefinition.type(GraphQLString);
@@ -374,11 +374,11 @@ public class GraphQLMutationSchemaHelper {
 					case EntityAttributeType.CUSTOM_TYPE_VALUE:
 						if (attribute.isRequired() && attribute.getDefaultValue() == null) {
 							fieldDefinition.type(GraphQLNonNull.nonNull(GraphQLTypeReference
-									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
+									.typeRef(Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
 						}
 						else {
 							fieldDefinition.type(GraphQLTypeReference
-									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
+									.typeRef(Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
 						}
 						break;
 						
@@ -405,11 +405,11 @@ public class GraphQLMutationSchemaHelper {
 	 *            The entity
 	 * @return The GraphQL object type
 	 */
-	public static final GraphQLInputObjectType getEntityGraphqlUpdateInputObjectType(Database database, Entity entity, boolean multiSchema) {
+	public static final GraphQLInputObjectType getEntityGraphqlUpdateInputObjectType(Database database, Entity entity) {
 		
 		// Get Fields
 		GraphQLInputObjectType.Builder graphqlInputObjectType = newInputObject()
-				.name((multiSchema ? Helper.toFirstUpper(entity.getSchema()) + "_" : "") + Helper.toFirstUpper(entity.getName()) + "UpdateInputType")
+				.name(Helper.toFirstUpper(entity.getSchema()) + "_" + Helper.toFirstUpper(entity.getName()) + "UpdateInputType")
 				.description(entity.getDocumentation());
 		
 		EntityMap entityMap = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName());
@@ -427,7 +427,7 @@ public class GraphQLMutationSchemaHelper {
 					case EntityAttributeType.TEXT_VALUE:
 						if (attribute.getEnumType() != null) {
 							fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
-									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
+									.typeRef(Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType")));
 						}
 						else {
 							fieldDefinition.type(GraphQLList.list(GraphQLString));
@@ -472,7 +472,7 @@ public class GraphQLMutationSchemaHelper {
 						
 					case EntityAttributeType.CUSTOM_TYPE_VALUE:
 						fieldDefinition.type(GraphQLList.list(GraphQLTypeReference
-								.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
+								.typeRef(Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType")));
 						break;
 						
 					default:
@@ -484,7 +484,7 @@ public class GraphQLMutationSchemaHelper {
 					case EntityAttributeType.TEXT_VALUE:
 						if (attribute.getEnumType() != null) {
 							fieldDefinition.type(GraphQLTypeReference
-									.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"));
+									.typeRef(Helper.toFirstUpper(attribute.getEnumType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getEnumType().getName()) + "EnumType"));
 						}
 						else {
 							fieldDefinition.type(GraphQLString);
@@ -529,7 +529,7 @@ public class GraphQLMutationSchemaHelper {
 						
 					case EntityAttributeType.CUSTOM_TYPE_VALUE:
 						fieldDefinition.type(GraphQLTypeReference
-								.typeRef((multiSchema ? Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" : "") + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
+								.typeRef(Helper.toFirstUpper(attribute.getCustomType().getSchema()) + "_" + Helper.toFirstUpper(attribute.getCustomType().getName()) + "InputType"));
 						break;
 						
 					default:

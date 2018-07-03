@@ -13,10 +13,9 @@
 	"service.redirectFromPort": 8080,
 	"service.redirectUrl": "https://localhost:8443",
 	
-	"db.name": "ficesa",
-	"db.schema.names": ["public"],
+	"db.name": "niledb",
 	"db.host": "localhost",
-	"db.port": 5433,
+	"db.port": 5432,
 	"db.ssl": false,
 	"db.ssl.mode": "verify-ca",
 	"db.ssl.rootCert": "misc/ssl/BaltimoreCyberTrustRoot.crt",
@@ -27,7 +26,7 @@
 	"db.username": "postgres",
 	"db.password": "Ficesa1234!",
 	
-	"security.enabled": true,
+	"security.enabled": false,
 	"security.anonymous.rolename": "anonymous",
 	"security.jwt.secret": "password_of_at_least_32_characters",
 	

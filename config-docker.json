@@ -14,7 +14,6 @@
 	"service.redirectUrl": "https://localhost",
 	
 	"db.name": "niledb",
-	"db.schema.names": ["public"],
 	"db.host": "db",
 	"db.port": 5432,
 	"db.ssl": false,

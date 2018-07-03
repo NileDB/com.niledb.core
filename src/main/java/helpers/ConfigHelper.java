@@ -39,7 +39,6 @@ public class ConfigHelper {
 	public final static String SERVICE_REDIRECT_FROM_PORT = "service.redirectFromPort";
 	public final static String SERVICE_REDIRECT_URL = "service.redirectUrl";
 	public final static String DB_NAME = "db.name";
-	public final static String DB_SCHEMA_NAMES = "db.schema.names";
 	public final static String DB_HOST = "db.host";
 	public final static String DB_PORT = "db.port";
 	public final static String DB_REPLICA_HOST = "db.replica.host";

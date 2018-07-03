@@ -6,6 +6,8 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,10 +17,8 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLNonNull;
-import helpers.ConfigHelper;
 import helpers.DatabaseHelper;
 import helpers.Helper;
-import io.vertx.core.json.JsonArray;
 
 public class RoleDelete {
 	public static GraphQLFieldDefinition.Builder builder = newFieldDefinition()
@@ -56,8 +56,12 @@ public class RoleDelete {
 						PreparedStatement ps = null;
 						StringBuffer sb = null;
 						
-						List<String> schemas = ((JsonArray) ConfigHelper.get(ConfigHelper.DB_SCHEMA_NAMES, null)).getList();
-						if (schemas != null) {
+						ResultSet schemaRS = connection.createStatement().executeQuery("select nspname from pg_namespace WHERE NOT nspname LIKE 'pg_%' AND nspname != 'information_schema'");
+						List<String> schemas = new ArrayList<String>();
+						while (schemaRS.next()) {
+							schemas.add(schemaRS.getString("nspname"));
+						}
+						if (schemas.size() > 0) {
 							sb = new StringBuffer("REVOKE USAGE ON ALL SEQUENCES IN SCHEMA ");
 							for (int i = 0; i < schemas.size(); i++) {
 								sb.append((i > 0 ? ", " : "") + schemas.get(i));

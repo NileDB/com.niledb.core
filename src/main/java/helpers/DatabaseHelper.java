@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -171,7 +172,7 @@ public class DatabaseHelper {
 		return connection;
 	}
 	
-	public static Database getDatabaseModel(String databaseHost, int databasePort, String databaseName, List<String> schemaNames) {
+	public static Database getDatabaseModel(String databaseHost, int databasePort, String databaseName) {
 		Connection connection = null;
 		
 		String catalogName = null;
@@ -184,6 +185,12 @@ public class DatabaseHelper {
 			PgDatabaseMetaData dbmd = (PgDatabaseMetaData) connection.getMetaData();
 			
 			DataFactory dataFactory = (DataFactory) new DataFactoryImpl();
+
+			ResultSet schemaRS = connection.createStatement().executeQuery("select nspname from pg_namespace WHERE NOT nspname LIKE 'pg_%' AND nspname != 'information_schema'");
+			List<String> schemaNames = new ArrayList<String>();
+			while (schemaRS.next()) {
+				schemaNames.add(schemaRS.getString("nspname"));
+			}
 			
 			database = dataFactory.createDatabase();
 			database.setName(databaseName);
