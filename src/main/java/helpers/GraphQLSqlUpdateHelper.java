@@ -49,7 +49,7 @@ import helpers.maps.SchemaMap;
  */
 public class GraphQLSqlUpdateHelper {
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static SqlUpdateCommand getCommand(List<ObjectField> fields, CustomType type, String relativePath, DataFetchingEnvironment environment) throws Exception {
 		SqlUpdateCommand sqlCommand = new SqlUpdateCommand();
 		int attributeCount = 0;
@@ -255,6 +255,25 @@ public class GraphQLSqlUpdateHelper {
 					else if (fieldValue instanceof List) {
 						if (((List) fieldValue).size() > 0) {
 							if (((List) fieldValue).get(0) instanceof Value) {
+								String values = "{";
+								for (int k = 0; k < ((List) fieldValue).size(); k++) {
+									Object value = ((List) fieldValue).get(k);
+									if (value instanceof EnumValue) {
+										values += ((EnumValue) value).getName() + ",";
+									}
+									else {  // TODO StringValue or others (implement these cases when necessary)
+										values += ((StringValue) value).getValue() + ",";
+									}
+								}
+								values = values.substring(0, values.length() - 1) + "}";
+								
+								sqlCommand.values.add(values);
+								sqlCommand.attributes += (attributeCount > 0 ? ", " : "") + "\"" + fieldName + "\"";
+								sqlCommand.valuePlaceholders += (attributeCount > 0 ? ", " : "") + "?::text[]";
+								attributeCount++;
+
+								/* Había un bug, ya que al modificar arrays elemento a elemento, si el array origen tenía más elementos que el array destino, no se borraban los sobrantes.
+								 * Lo dejo aquí comentado por si acaso tengo que volver por algún bug
 								EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);
 								for (int k = 0; k < ((List) fieldValue).size(); k++) {
 									Object value = ((List) fieldValue).get(k);
@@ -278,6 +297,7 @@ public class GraphQLSqlUpdateHelper {
 										attributeCount++;
 									}
 								}
+								*/
 							}
 							else { // instanceof ObjectField
 								EntityAttribute attribute = SchemaMap.entities.get(entity.getSchema() + "." + entity.getName()).attributes.get(fieldName);

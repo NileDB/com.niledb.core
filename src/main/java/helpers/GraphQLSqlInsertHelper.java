@@ -49,7 +49,7 @@ import helpers.maps.SchemaMap;
  */
 public class GraphQLSqlInsertHelper {
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static SqlInsertCommand getCommand(List<ObjectField> fields, CustomType type, String relativePath, DataFetchingEnvironment environment) throws Exception {
 		SqlInsertCommand sqlCommand = new SqlInsertCommand();
 		int attributeCount = 0;
