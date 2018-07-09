@@ -1,5 +1,5 @@
-#FROM openjdk:8-jre-alpine
-FROM java:8-jre
+FROM openjdk:8-jre-alpine
+#FROM java:8-jre
 
 ENV VERTICLE_FILE com.niledb.core-0.8.3-fat.jar
 ENV VERTICLE_HOME /usr/verticles
