@@ -15,6 +15,9 @@
  */
 package helpers;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -122,6 +125,50 @@ public class DatabaseHelper {
 										statement.execute("CREATE ROLE " + anonymousUsername);
 									}
 								}
+							}
+							catch (Exception e2) {
+								e2.printStackTrace();
+							}
+							
+							connection.close();
+							
+							try {
+								connection = DriverManager.getConnection("jdbc:postgresql://"
+										+ ConfigHelper.get(ConfigHelper.DB_HOST, "localhost") + ":"
+										+ ConfigHelper.get(ConfigHelper.DB_PORT, 5432) + "/"
+										+ ConfigHelper.get(ConfigHelper.DB_NAME, "nile"),
+										(String) ConfigHelper.get(ConfigHelper.DB_USERNAME, "postgres"), 
+										(String) ConfigHelper.get(ConfigHelper.DB_PASSWORD, "postgres"));
+								statement = connection.createStatement();
+								
+								BufferedReader br = new BufferedReader(new FileReader(new File("misc/model/create.sql")));
+								String line = null;
+								
+								StringBuffer sentence = new StringBuffer();
+								boolean executionDisabled = false;
+								
+								while ((line = br.readLine()) != null) {
+									
+									if (line.startsWith("--")) {
+										continue;
+									}
+									
+									sentence.append(line + "\n");
+									
+									if (!executionDisabled && line.contains(";")) {
+										logger.info(sentence.toString());
+										statement.execute(sentence.toString());
+										sentence = new StringBuffer();
+									}
+									
+									if (line.contains("BEGIN") || line.contains("DECLARE")) {
+										executionDisabled = true;
+									}
+									else if (line.contains("END;")) {
+										executionDisabled = false;
+									}
+								}
+								br.close();
 							}
 							catch (Exception e2) {
 								e2.printStackTrace();
