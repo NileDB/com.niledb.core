@@ -130,48 +130,51 @@ public class DatabaseHelper {
 								e2.printStackTrace();
 							}
 							
-							connection.close();
+							if ((Boolean) ConfigHelper.get(ConfigHelper.MODEL_CREATE_MODELS_SCHEMA, false)) {
 							
-							try {
-								connection = DriverManager.getConnection("jdbc:postgresql://"
-										+ ConfigHelper.get(ConfigHelper.DB_HOST, "localhost") + ":"
-										+ ConfigHelper.get(ConfigHelper.DB_PORT, 5432) + "/"
-										+ ConfigHelper.get(ConfigHelper.DB_NAME, "nile"),
-										(String) ConfigHelper.get(ConfigHelper.DB_USERNAME, "postgres"), 
-										(String) ConfigHelper.get(ConfigHelper.DB_PASSWORD, "postgres"));
-								statement = connection.createStatement();
+								connection.close();
 								
-								BufferedReader br = new BufferedReader(new FileReader(new File("misc/model/create.sql")));
-								String line = null;
-								
-								StringBuffer sentence = new StringBuffer();
-								boolean executionDisabled = false;
-								
-								while ((line = br.readLine()) != null) {
+								try {
+									connection = DriverManager.getConnection("jdbc:postgresql://"
+											+ ConfigHelper.get(ConfigHelper.DB_HOST, "localhost") + ":"
+											+ ConfigHelper.get(ConfigHelper.DB_PORT, 5432) + "/"
+											+ ConfigHelper.get(ConfigHelper.DB_NAME, "nile"),
+											(String) ConfigHelper.get(ConfigHelper.DB_USERNAME, "postgres"), 
+											(String) ConfigHelper.get(ConfigHelper.DB_PASSWORD, "postgres"));
+									statement = connection.createStatement();
 									
-									if (line.startsWith("--")) {
-										continue;
-									}
+									BufferedReader br = new BufferedReader(new FileReader(new File("misc/model/create.sql")));
+									String line = null;
 									
-									sentence.append(line + "\n");
+									StringBuffer sentence = new StringBuffer();
+									boolean executionDisabled = false;
 									
-									if (!executionDisabled && line.contains(";")) {
-										logger.info(sentence.toString());
-										statement.execute(sentence.toString());
-										sentence = new StringBuffer();
+									while ((line = br.readLine()) != null) {
+										
+										if (line.startsWith("--")) {
+											continue;
+										}
+										
+										sentence.append(line + "\n");
+										
+										if (!executionDisabled && line.contains(";")) {
+											logger.info(sentence.toString());
+											statement.execute(sentence.toString());
+											sentence = new StringBuffer();
+										}
+										
+										if (line.contains("BEGIN") || line.contains("DECLARE")) {
+											executionDisabled = true;
+										}
+										else if (line.contains("END;")) {
+											executionDisabled = false;
+										}
 									}
-									
-									if (line.contains("BEGIN") || line.contains("DECLARE")) {
-										executionDisabled = true;
-									}
-									else if (line.contains("END;")) {
-										executionDisabled = false;
-									}
+									br.close();
 								}
-								br.close();
-							}
-							catch (Exception e2) {
-								e2.printStackTrace();
+								catch (Exception e2) {
+									e2.printStackTrace();
+								}
 							}
 						}
 						catch (SQLException e2) {

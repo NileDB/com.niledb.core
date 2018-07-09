@@ -35,5 +35,6 @@
 	
 	"model.path": "model.xmi",
 	"model.createModelFromDb": true,
-	"model.createDbFromModel": true
+	"model.createDbFromModel": true,
+	"model.createModelsSchema": true
 }
