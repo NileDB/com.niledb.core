@@ -36,6 +36,7 @@ import io.vertx.ext.web.handler.BasicAuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import helpers.ConfigHelper;
+import home.HomeHandler;
 import graphql.GraphQLHandler;
 
 /**
@@ -132,6 +133,8 @@ public class HttpVerticle extends AbstractVerticle {
 		
 		// We replace GET method with GraphQL-Playground
 		//router.get("/graphql").blockingHandler(GraphQLHandler::execute);
+
+		router.post("/home").blockingHandler(HomeHandler::execute);
 		
 		router.post("/graphql").blockingHandler(GraphQLHandler::execute);
 		router.options("/graphql").handler(routingContext -> {

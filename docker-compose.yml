@@ -26,6 +26,7 @@ services:
     links:
       - db
     ports:
+      - 443:443
       - 80:80
       - 1883:1883
     restart: always

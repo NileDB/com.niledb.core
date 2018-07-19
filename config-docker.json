@@ -1,7 +1,7 @@
 {
-	"service.host": "localhost",
-	"service.port": 80,
-	"service.ssl": false,
+	"service.host": "home.niledb.com",
+	"service.port": 443,
+	"service.ssl": true,
 	"service.ssl.autoGenerateCert": false,
 	"service.ssl.key.path": "misc/ssl/private.pem",
 	"service.ssl.cert.path": "misc/ssl/public.pem",
@@ -9,9 +9,9 @@
 	"service.username": "niledb",
 	"service.password": "xxxxxxx",
 	"service.query.maxResults": 100,
-	"service.forceSsl": false,
+	"service.forceSsl": true,
 	"service.redirectFromPort": 80,
-	"service.redirectUrl": "https://localhost",
+	"service.redirectUrl": "https://home.niledb.com",
 	
 	"db.name": "niledb",
 	"db.host": "db",
