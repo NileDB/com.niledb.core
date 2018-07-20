@@ -40,11 +40,16 @@ public class FarmaciaGTImporter {
 		
 		int maxDepth = 0;
 
+		System.out.println("Size: " + products.size());
+		
 		for (int i = 0; i < products.size(); i++) {
 			JsonObject product = products.getJsonObject(i);
 			String sellerId = product.getString("ID");
-			String name = product.getString("name");
+			String name = product.getString("name").replaceAll("'", "''");
 			String description = product.getString("description");
+			if (description != null) {
+				description = description.replaceAll("'", "''");
+			}
 			String url = product.getString("URL");
 			double salePrice = product.getJsonObject("price").getDouble("amount");
 			String imageUrl = product.getJsonArray("images").getString(0);
@@ -59,8 +64,9 @@ public class FarmaciaGTImporter {
 			
 			String hierarchyString = properties.getJsonArray("extraInfo") != null ? (properties.getJsonArray("extraInfo").size() > 0 ? properties.getJsonArray("extraInfo").getString(0) : null) : null;
 
+			Integer collectionId = null;
+			
 			if (hierarchyString != null) {
-				Integer collectionId = null;
 				ResultSet rs = statement.executeQuery("SELECT \"id\", \"name\" FROM \"Products\".\"Collection\" WHERE \"name\" = '" + hierarchyString + "'");
 				if (rs.next()) {
 					collectionId = rs.getInt("id");
@@ -99,12 +105,19 @@ public class FarmaciaGTImporter {
 				rs.close();
 			}
 			
-			System.out.println(gtin + ": " + name + " (" + brand + ")");
-			System.out.println("Id: " + sellerId + ", MPN: " + mpn + ", Hierarchy: " + hierarchyId + ", Sale price: " + salePrice + ", Stock: " + stock);
-			System.out.println("Url: " + url);
-			System.out.println("Image url: " + imageUrl);
-			System.out.println("Description: " + description);
-			System.out.println("---------------");
+			ResultSet rs = statement.executeQuery("SELECT \"id\" FROM \"Products\".\"Item\" WHERE \"name\" = '" + name + "' AND \"brand\" = '" + brand + "'");
+			if (!rs.next()) {
+				ResultSet rs2 = statement.executeQuery("INSERT INTO \"Products\".\"Item\" (\"name\", \"description\", \"brand\", \"salePrice\", \"originalPrice\", \"stock\", \"seller\", \"url\", \"imageUrl\") VALUES ('" + name + "', '" + description + "', '" + brand + "', " + salePrice + ", " + salePrice + ", " + (stock.equals("in stock") ? 10 : 0) + ", 'FarmaciaGT', '" + url + "', '" + imageUrl + "') RETURNING \"id\"");
+				if (rs2.next()) {
+					Integer itemId = rs2.getInt("id");
+					statement.execute("INSERT INTO \"Products\".\"Variant\" (\"item\", \"gtin13\", \"mpn\", \"spn\") VALUES (" + itemId + ", '" + gtin + "', '" + mpn + "', '" + sellerId + "')");
+					if (collectionId != null) {
+						statement.execute("INSERT INTO \"Products\".\"CollectionItem\" (\"collection\", \"item\") VALUES (" + collectionId + ", " + itemId + ")");
+					}
+				}
+				rs2.close();
+			}
+			rs.close();
 		}
 		connection.close();
 	}
