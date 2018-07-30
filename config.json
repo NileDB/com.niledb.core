@@ -1,7 +1,7 @@
 {
 	"service.host": "localhost",
 	"service.port": 7777,
-	"service.ssl": true,
+	"service.ssl": false,
 	"service.ssl.autoGenerateCert": false,
 	"service.ssl.key.path": "misc/ssl/private.pem",
 	"service.ssl.cert.path": "misc/ssl/public.pem",
